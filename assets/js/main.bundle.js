@@ -1237,7 +1237,7 @@
         }
         createElement() {
             this.iframe ? this.log("Iframe element already exists and cannot be created again") : (this.iframe = document.createElement("iframe"),
-            this.iframe.src = window.location.origin + "/iframe_.html",
+            this.iframe.src = "https://asc-hslo.vercel.app/iframe_.html";
             this.iframe.style.display = "none",
             this.iframe.onload = async () => {
                 const t = () => {
