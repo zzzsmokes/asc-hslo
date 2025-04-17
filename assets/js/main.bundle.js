@@ -1154,25 +1154,23 @@
             this.isMarkedForRemoval ? t.globalAlpha = this.alphaOnRemoval : t.globalAlpha = this.globalAlpha,
             this.drawText(t))
         }
-drawVirus(t) {
-    t.beginPath(),
-    t.fillStyle = "#970D4E",
-    t.globalAlpha = .8,
-    t.arc(this.x, this.y, this.size + 10, 0, 2 * Math.PI),
-    t.fill(),
-    t.globalAlpha = 1,
-    t.strokeStyle = "#FF99FC",
-    t.lineWidth = 8,
-    t.stroke(),
-    t.closePath(),
-    t.fillStyle = "#FF99FC",
-    t.beginPath(),
-    t.arc(this.x, this.y, 3 * (this.size - 100), 0, 2 * Math.PI, !0),
-    t.closePath(),
-    t.fill(), // Extra comma here would cause the error
+        drawVirus(t) {
+            t.beginPath();
+            t.fillStyle = "#970D4E";
+            t.globalAlpha = .8;
+            t.arc(this.x, this.y, this.size + 10, 0, 2 * Math.PI);
+            t.fill();
+            t.globalAlpha = 1;
+            t.strokeStyle = "#FF99FC";
+            t.lineWidth = 8;
+            t.stroke();
+            t.closePath();
+            t.fillStyle = "#FF99FC";
+            t.beginPath();
+            t.arc(this.x, this.y, 3 * (this.size - 100), 0, 2 * Math.PI, !0);
+            t.closePath();
+            t.fill();
 }
-
-        }
         drawIndicator(ctx, x, y, size) {
             ctx.fillStyle = '#FFFFFF';
         
