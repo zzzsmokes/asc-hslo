@@ -686,7 +686,7 @@
                 ctx.fillText(player.nickname, width - massWidth - 20 * scale, y);
             });
         }
-        lloop() {
+        loop() {
             const now = Date.now();
             const delta = now - this.stats.lastFrameTime;
         
@@ -705,8 +705,8 @@
             this.updateStatsDisplay(),
             this.drawMinimap(),
             this.drawLeaderboard(),
-            this.drawActivePlayers(), // Ensure this is called
-            this.drawChatMessages(),  // Ensure this is called
+            this.drawActivePlayers(), // Add this to render active players
+            this.drawChatMessages(),  // Add this to render chat messages
             requestAnimationFrame(( () => this.loop()))
         }
         drawChatMessages() {
@@ -2342,8 +2342,18 @@
                 this.initPlayerControls(),
                 this.initMouseControls(),
                 this.initPlayerInputs(),
-                this.initializeSkinInputs()
+                this.initializeSkinInputs(),
                 this.sendChatMessage()
+            
+                // Simulate data for testing
+                this.activePlayers.push(
+                    { clientID: 1, nickname: "Player1", mass: 1000 },
+                    { clientID: 2, nickname: "Player2", mass: 500 }
+                );
+                this.chatMessages.push(
+                    { clientID: 1, message: "Hello, world!", color: "#FF0000", timestamp: Date.now() },
+                    { clientID: 2, message: "Testing chat!", color: "#00FF00", timestamp: Date.now() }
+                );
             }
             handelResizing() {
                 const t = () => {
