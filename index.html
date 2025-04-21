@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+  <base href="https://stopleakingx.vercel.app/">
   <meta charset="UTF-8" />
   <link href="https://fonts.googleapis.com/css?family=Arbutus+Slab|Noto+Sans:400,600,700|Ubuntu:400,700|Oswald:400,700" rel="stylesheet">
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
@@ -22,7 +23,7 @@
 <body>
   <!-- Game Display -->
   <canvas id="game-display"></canvas>
-
+  
   <!-- Hud Display -->
   <div id="hud-display" class="pointer-events-none visible">
     <canvas id="leaderboard-canvas" width="200">
@@ -369,21 +370,21 @@
   </div>
 
   <script>
-    toastr.options = {
-      'closeButton': true,
-      'debug': false,
-      'newestOnTop': false,
-      'progressBar': true,
-      'positionClass': 'toast-bottom-left',
-      'preventDuplicates': false,
-      'showDuration': '1000',
-      'hideDuration': '1000',
-      'timeOut': '5000',
-      'extendedTimeOut': '1000',
-      'showEasing': 'swing',
-      'hideEasing': 'linear',
-      'showMethod': 'fadeIn',
-      'hideMethod': 'fadeOut',
+        toastr.options = {
+        'closeButton': true,
+        'debug': false,
+        'newestOnTop': false,
+        'progressBar': true,
+        'positionClass': 'toast-bottom-left',
+        'preventDuplicates': false,
+        'showDuration': '1000',
+        'hideDuration': '1000',
+        'timeOut': '5000',
+        'extendedTimeOut': '1000',
+        'showEasing': 'swing',
+        'hideEasing': 'linear',
+        'showMethod': 'fadeIn',
+        'hideMethod': 'fadeOut',
     }
   </script>
 
@@ -392,6 +393,5 @@
 
   <script src="https://unpkg.com/gifler@latest/gifler.min.js"></script>
   <script src="/main.bundle.js"></script>
-  <script src="/hslo-features.js"></script>
 </body>
 </html>
