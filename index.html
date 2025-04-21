@@ -4,27 +4,26 @@
 <head>
   <base href="https://asc-hslo.vercel.app/">
   <meta charset="UTF-8" />
-          <link href="https://fonts.googleapis.com/css?family=Arbutus+Slab|Noto+Sans:400,600,700|Ubuntu:400,700|Oswald:400,700" rel="stylesheet">
-        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/brands.css" integrity="sha384-i2PyM6FMpVnxjRPi0KW/xIS7hkeSznkllv+Hx/MtYDaHA5VcF0yL3KVlvzp8bWjQ" crossorigin="anonymous">
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/fontawesome.css" integrity="sha384-sri+NftO+0hcisDKgr287Y/1LVnInHJ1l+XC7+FOabmTTIK0HnE2ID+xxvJ21c5J" crossorigin="anonymous">
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-        <link href="https://hslo.gitlab.io/assets/endymion.css?c6e9fb9f4aa7ae304fbf" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css?family=Arbutus+Slab|Noto+Sans:400,600,700|Ubuntu:400,700|Oswald:400,700" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/brands.css" integrity="sha384-i2PyM6FMpVnxjRPi0KW/xIS7hkeSznkllv+Hx/MtYDaHA5VcF0yL3KVlvzp8bWjQ" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.2/css/fontawesome.css" integrity="sha384-sri+NftO+0hcisDKgr287Y/1LVnInHJ1l+XC7+FOabmTTIK0HnE2ID+xxvJ21c5J" crossorigin="anonymous">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <link href="https://hslo.gitlab.io/assets/endymion.css?c6e9fb9f4aa7ae304fbf" rel="stylesheet">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Ascending</title>
   <link rel="icon" href="./assets/images/icon.ico" type="image/x-icon">
   <link href="./assets/css/main.css" rel="stylesheet">
   <!-- Toastr -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-	<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" integrity="sha512-VEd+nq25CkR676O+pLBnDW09R7VQX9Mdiij052gVCp5yVH3jGtH70Ho/UUv4mJDsEdTvqRCFZg0NKGiojGnUCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 
 <body>
   <!-- Game Display -->
   <canvas id="game-display"></canvas>
   
-
   <!-- Hud Display -->
   <div id="hud-display" class="pointer-events-none visible">
     <canvas id="leaderboard-canvas" width="200">
@@ -79,7 +78,15 @@
                   <div class="label">Credits</div>
               </div>
           </div>
-          
+          <!-- New Toggle Dark Mode Button -->
+          <div class="button right five" id="toggle-dark-mode">
+              <div class="inner">
+                  <div class="icon">
+                      <i class="material-icons">brightness_6</i>
+                  </div>
+                  <div class="label">Dark Mode</div>
+              </div>
+          </div>
           <!-- Credits Menu -->
           <div id="credits-menu" class="menu" style="display: none;">
               <div class="menu-title">Credits</div>
@@ -133,15 +140,14 @@
           </div>
       
           <!-- Server Dropdown -->
-
-      <div class="dropdown-wrapper">
-        <label for="servers-select">Server:</label>
-        <select id="servers" class="custom-select">
-            <option value="wss://eu.senpa.io:2001/">[EU FFA] Nemesis</option>
-            <option value="wss://us.senpa.io:2001/">[NA FFA] Heavenly</option>
-            <option value="wss://127.0.0.1:443/">Local</option>
-        </select>
-      </div>
+          <div class="dropdown-wrapper">
+            <label for="servers-select">Server:</label>
+            <select id="servers" class="custom-select">
+                <option value="wss://eu.senpa.io:2001/">[EU FFA] Nemesis</option>
+                <option value="wss://us.senpa.io:2001/">[NA FFA] Heavenly</option>
+                <option value="wss://127.0.0.1:443/">Local</option>
+            </select>
+          </div>
             <div id="restart" class="restart-button button"><i class="fas fa-redo-alt"></i></div>
           </div>
          </div>
@@ -265,14 +271,14 @@
                     <span class="slider"></span>
                   </label>
                 </div>
-	            	<div class="option">
-		              <span>Multibox ring color:</span>
-		              <input type="color" id="MBColor1" value="#FFFFFF">
+                <div class="option">
+                  <span>Multibox ring color:</span>
+                  <input type="color" id="MBColor1" value="#FFFFFF">
 
-	            	<div class="option">
-	            	  <span></span>
-            		  <input type="color" id="MBColor2" value="#00B9E8">
-            		</div>
+                <div class="option">
+                  <span></span>
+                  <input type="color" id="MBColor2" value="#00B9E8">
+                </div>
               </div>
               
               <div class="option">
@@ -340,7 +346,7 @@
                 <div class="option">
                   <span>Middle click:</span>
                   <select class="mouseActions" id="middleClick">
-                    <option selected ="noAction">No action</option>
+                    <option selected="noAction">No action</option>
                     <option value="macroFeed">Macro Feed</option>
                     <option value="split">Split</option>
                     <option value="doubleSplit">Doublesplit</option>
@@ -378,26 +384,26 @@
   </div>
 
   <script>
-        toastr.options = {
-        'closeButton': true,
-        'debug': false,
-        'newestOnTop': false,
-        'progressBar': true,
-        'positionClass': 'toast-bottom-left',
-        'preventDuplicates': false,
-        'showDuration': '1000',
-        'hideDuration': '1000',
-        'timeOut': '5000',
-        'extendedTimeOut': '1000',
-        'showEasing': 'swing',
-        'hideEasing': 'linear',
-        'showMethod': 'fadeIn',
-        'hideMethod': 'fadeOut',
+    toastr.options = {
+      'closeButton': true,
+      'debug': false,
+      'newestOnTop': false,
+      'progressBar': true,
+      'positionClass': 'toast-bottom-left',
+      'preventDuplicates': false,
+      'showDuration': '1000',
+      'hideDuration': '1000',
+      'timeOut': '5000',
+      'extendedTimeOut': '1000',
+      'showEasing': 'swing',
+      'hideEasing': 'linear',
+      'showMethod': 'fadeIn',
+      'hideMethod': 'fadeOut',
     }
   </script>
 
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
-<div id="cf-turnstile" data-sitekey="0x4AAAAAAACWFDYFT_opGqX8"></div>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+  <div id="cf-turnstile" data-sitekey="0x4AAAAAAACWFDYFT_opGqX8"></div>
 
   <script src="https://unpkg.com/gifler@latest/gifler.min.js"></script>
   <script src="./assets/js/main.bundle.js"></script>
