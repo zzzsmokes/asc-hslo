@@ -12,15 +12,13 @@
             const i = (...s) => {
                 e(...s),
                 this.off(t, i)
-            }
-            ;
+            };
             this.on(t, i)
         }
         emit(t, ...e) {
             this.events[t] && this.events[t].forEach((t => {
                 t(...e)
-            }
-            ))
+            }))
         }
         off(t, e) {
             this.events[t] && (this.events[t] = this.events[t].filter((t => t !== e)))
@@ -358,13 +356,18 @@
             this.botsFocusClientID = null,
             this.removedCells = [],
             this.pelletsFrame = [],
-            this.cellsFrame = []
+            this.cellsFrame = [],
+            this.stats = {
+                lastFrameTime: 0,
+                frameCount: 0
+            }
         }
         start() {
             this.canvas = document.getElementById("game-display"),
             this.ctx = this.canvas.getContext("2d"),
             this.minimapCanvas = document.getElementById("minimap-canvas"),
             this.minimapCtx = this.minimapCanvas.getContext("2d"),
+            this.statsElement = document.getElementById("stats"),
             this.canvas.addEventListener("wheel", (t => {
                 this.setZoom(t)
             }
@@ -745,11 +748,37 @@
             this.drawMinimap(),
             this.drawLeaderboard()
         }
+        updateStatsDisplay() {
+            // Calculate mass
+            const client = a.getActiveClient();
+            if (client) {
+                g.stats.mass = client.stores.ownedCells.reduce((total, cell) => total + cell.mass, 0);
+            } else {
+                g.stats.mass = 0;
+            }
+
+            // Update the stats display
+            if (this.statsElement) {
+                this.statsElement.textContent = `Ping: ${g.stats.ping}ms | FPS: ${g.stats.fps} | STE: ${g.stats.ste.toFixed(1)}% | Mass: ${g.stats.mass}`;
+            }
+        }
         loop() {
-            const t = Date.now();
+            const now = Date.now();
+            const delta = now - this.stats.lastFrameTime;
+
+            // Calculate FPS
+            this.stats.frameCount++;
+            if (delta >= 1000) {
+                g.stats.fps = Math.round((this.stats.frameCount * 1000) / delta);
+                this.stats.frameCount = 0;
+                this.stats.lastFrameTime = now;
+            }
+
+            // Update stats
             this.updateMouseWorld(),
             this.updateCamera(),
-            this.updateScene(t),
+            this.updateScene(now),
+            this.updateStatsDisplay(),
             requestAnimationFrame(( () => this.loop()))
         }
     }
@@ -777,7 +806,6 @@
             this.gifCanvas.style.imageRendering = "pixelated",
             this.gifCtx.imageSmoothingEnabled = !1,
             this.gifCtx.imageSmoothingQuality = "low"
-
         }
         setOrGetSkin(t) {
             if ("no-skin" === t)
@@ -1170,7 +1198,6 @@
             t.arc(this.x, this.y, 3 * (this.size - 100), 0, 2 * Math.PI, !0),
             t.closePath(),
             t.fill()
-
         }
         drawIndicator(ctx, x, y, size) {
             ctx.fillStyle = '#FFFFFF';
@@ -1290,11 +1317,9 @@
                         )).catch((t => this.logError("Error loading module:", t)))
                     } else
                         setTimeout(t, 50)
-                }
-                ;
+                };
                 t()
-            }
-            ,
+            },
             document.body.appendChild(this.iframe))
         }
         deleteElement() {
@@ -1422,9 +1447,10 @@
                 break;
             case 5:
                 const o = e.readUInt32() / 1e3;
-                Math.floor(o / 3600),
-                Math.floor(o % 3600 / 60),
-                Math.floor(o % 60);
+                const hours = Math.floor(o / 3600),
+                      minutes = Math.floor(o % 3600 / 60),
+                      seconds = Math.floor(o % 60);
+                this.log(`Game time: ${hours}h ${minutes}m ${seconds}s`);
                 break;
             case 7:
                 e.readUInt8();
@@ -1584,993 +1610,1025 @@
                         c = a.darkerValue
                     }
                     if (3 === o && (g = !0,
-                    r = n.randomColor()),
-                    5 === o) {
-                        const t = e.readUInt16()
-                          , i = new Uint8Array(t);
-                        for (let s = 0; s < t; s++)
-                            i[s] = e.readUInt8();
-                        console.log(i),
-                        this.allocArr(i)
+                        r = n.randomColor()),
+                        5 === o) {
+                            const t = e.readUInt16()
+                              , i = new Uint8Array(t);
+                            for (let s = 0; s < t; s++)
+                                i[s] = e.readUInt8();
+                            console.log(i),
+                            this.allocArr(i)
+                        }
+                        if (5024 == t)
+                            continue;
+                        const p = this.stores.ownedIDs.includes(l)
+                          , w = new h;
+                        w.initialize(this, l, t, i, s, a, r, c, d, u),
+                        w.setFlags(g, m, f, !1),
+                        this.stores.cellsByID[t] = w,
+                        this.stores.cellsToRender.push(w),
+                        p && (this.stores.ownedCells.push(w),
+                        this.playing = !0,
+                        this.spectating = !1,
+                        this.emit("playerAlive"))
                     }
-                    if (5024 == t)
-                        continue;
-                    const p = this.stores.ownedIDs.includes(l)
-                      , w = new h;
-                    w.initialize(this, l, t, i, s, a, r, c, d, u),
-                    w.setFlags(g, m, f, !1),
-                    this.stores.cellsByID[t] = w,
-                    this.stores.cellsToRender.push(w),
-                    p && (this.stores.ownedCells.push(w),
-                    this.playing = !0,
-                    this.spectating = !1,
-                    this.emit("playerAlive"))
-                }
-                let w = e.readUInt16();
-                for (; w--; ) {
-                    const t = e.readUInt32()
-                      , i = e.readInt32()
-                      , s = e.readInt32()
-                      , n = e.readUInt16()
-                      , a = this.stores.cellsByID[t];
-                    if (!a)
-                        return this.log(`No cell with ID ${t} exist. Request full sync.`),
-                        void this.fullSync();
-                    a.update(i, s, n)
-                }
-                let y = e.readUInt16();
-                for (; y--; ) {
-                    const t = e.readUInt32()
-                      , i = this.stores.cellsByID[t];
-                    i && i.destroy()
-                }
-                if (this.alloc(),
-                e.offset + 1 <= e.view.byteLength && console.log("active tab", e.readUInt8()),
-                e.offset + 4 <= e.view.byteLength) {
-                    const t = e.readUInt32();
-                    console.log("new border", t)
-                }
-                break;
-            case 21:
-                this.stores.leaderboard = [];
-                let v = e.readInt8()
-                  , b = [];
-                for (; v--; ) {
-                    const t = e.readUInt16()
-                      , i = e.readUInt32()
-                      , s = this.stores.clientsByID[t]
-                      , n = s?.nickname;
-                    b.push({
-                        nickname: n,
-                        totalMass: i
-                    })
-                }
-                b.sort(( (t, e) => e.totalMass - t.totalMass)),
-                b.forEach(( (t, e) => {
-                    this.stores.leaderboard.push({
-                        clientID: t.clientID,
-                        position: e + 1,
-                        nickname: t.nickname,
-                        totalMass: t.totalMass,
-                        isMe: this.stores.ownedIDs.includes(t.clientID)
-                    })
-                }
-                ));
-                break;
-            case 22:
-                const I = Date.now();
-                let C = e.readInt8();
-                for (; C--; ) {
-                    const t = e.readUInt16()
-                      , i = e.readInt32()
-                      , s = e.readInt32()
-                      , n = e.readUInt16()
-                      , a = this.stores.clientsByID[t];
-                    if (!a)
-                        return;
-                    if (!a.isBot) {
-                        let e = this.stores.minimap.find((e => e.clientID === t));
-                        e ? (e.prevX = e.x,
-                        e.prevY = e.y,
-                        e.x = i,
-                        e.y = s,
-                        e.size = n,
-                        e.lastUpdated = I) : this.stores.minimap.push({
+                    let w = e.readUInt16();
+                    for (; w--; ) {
+                        const t = e.readUInt32()
+                          , i = e.readInt32()
+                          , s = e.readInt32()
+                          , n = e.readUInt16()
+                          , a = this.stores.cellsByID[t];
+                        if (!a)
+                            return this.log(`No cell with ID ${t} exist. Request full sync.`),
+                            void this.fullSync();
+                        a.update(i, s, n)
+                    }
+                    let y = e.readUInt16();
+                    for (; y--; ) {
+                        const t = e.readUInt32()
+                          , i = this.stores.cellsByID[t];
+                        i && i.destroy()
+                    }
+                    if (this.alloc(),
+                    e.offset + 1 <= e.view.byteLength && console.log("active tab", e.readUInt8()),
+                    e.offset + 4 <= e.view.byteLength) {
+                        const t = e.readUInt32();
+                        console.log("new border", t)
+                    }
+                    // Track server tick frequency for STE calculation
+                    const now = Date.now();
+                    if (g.stats.lastServerUpdate) {
+                        const tickInterval = now - g.stats.lastServerUpdate;
+                        // Ideal tick rate is 50ms (20 ticks/sec), so STE = (ideal / actual) * 100%
+                        g.stats.ste = (50 / tickInterval) * 100;
+                        g.stats.ste = Math.min(100, Math.max(0, g.stats.ste)); // Clamp STE between 0% and 100%
+                    }
+                    g.stats.lastServerUpdate = now;
+                    break;
+                case 30:
+                    this.stores.leaderboard = [];
+                    let b = e.readUInt8();
+                    for (let t = 0; t < b; t++) {
+                        const i = e.readUInt16()
+                          , s = e.readUInt32()
+                          , a = e.readLongString16()
+                          , o = this.stores.ownedIDs.includes(i);
+                        this.stores.leaderboard.push({
+                            position: t + 1,
+                            clientID: i,
+                            totalMass: s,
+                            nickname: a,
+                            isMe: o
+                        })
+                    }
+                    break;
+                case 40:
+                    this.stores.minimap = [];
+                    let v = e.readUInt8();
+                    for (; v--; ) {
+                        const t = e.readUInt16()
+                          , i = e.readFloat()
+                          , s = e.readFloat()
+                          , a = e.readUInt32()
+                          , o = e.readUInt8()
+                          , l = e.readUInt8()
+                          , r = e.readUInt8()
+                          , h = new n(o, l, r)
+                          , c = e.readLongString16();
+                        this.stores.minimap.push({
                             clientID: t,
                             x: i,
                             y: s,
-                            size: n,
+                            mass: a,
+                            color: h.value,
+                            nickname: c,
                             prevX: i,
-                            prevY: s,
-                            nickname: a.nickname,
-                            color: a.color,
-                            lastUpdated: I
+                            prevY: s
                         })
                     }
-                }
-                const x = 1e3;
-                this.stores.minimap = this.stores.minimap.filter((t => I - t.lastUpdated < x));
-                break;
-            case 23:
-                this.spectatePoint.x = e.readInt32(),
-                this.spectatePoint.y = e.readInt32();
-                break;
-            case 30:
-                break;
-            case 40:
-                e.readUInt16(),
-                e.readUInt8(),
-                e.readString16();
-                break;
-            case 41:
-                e.readUInt8(),
-                e.readString16();
-                break;
-            case 42:
-                e.readUInt8(),
-                e.readUInt8(),
-                e.readUInt8(),
-                e.readUInt8(),
-                e.readUInt8(),
-                e.readUInt8(),
-                e.readUInt16();
-                break;
-            case 43:
-                e.readString16(),
-                e.readUInt8(),
-                e.readString16();
-                break;
-            case 51:
-                e.readUInt32()
-            }
-        }
-        alloc() {
-            this.iframe.window.CanvasCaptureMediaStreamTrack || Object.assign(this.iframe.window.CanvasCaptureMediaStreamTrack, {}),
-            this.iframe.window.CanvasCaptureMediaStreamTrack.contextBufferFactory && (this.module._alloc(9, this.iframe.window.CanvasCaptureMediaStreamTrack.contextBufferFactory),
-            this.iframe.window.CanvasCaptureMediaStreamTrack.contextBufferFactory = null)
-        }
-        allocArr(t) {
-            this.module._alloc(8, t)
-        }
-        onClose() {
-            this.cleanUp(),
-            this.iframe.deleteElement(),
-            this.websocket = null,
-            this.iframe = null,
-            this.log("Connection closed."),
-            this.emit("close", this)
-        }
-        onError(t) {
-            this.log("Connection error.", t),
-            this.emit("error")
-        }
-        sendMessage(t) {
-            this.isConnected && this.websocket.send(t)
-        }
-        sendAuth(t="null") {
-            const i = new e;
-            i.writeUInt8(13),
-            i.writeUInt16(t.length),
-            i.writeString16(t),
-            this.sendMessage(i.getBuffer())
-        }
-        sendCursorPosition(t, i) {
-            if (!this.handshakeCompleted)
-                return;
-            const s = new e;
-            s.writeUInt8(20),
-            s.writeUInt8(this.spectating ? 1 : 0),
-            0 == this.spectating && s.writeUInt8(this.multiboxID),
-            s.writeInt32(t),
-            s.writeInt32(i),
-            this.sendMessage(s.getBuffer())
-        }
-        sendPlayerInfo({nickname: t, tag: i}) {
-            if (this.handshakeCompleted) {
-                if (void 0 !== t) {
-                    const i = new e;
-                    i.writeUInt8(10),
-                    i.writeString16(t),
-                    this.sendMessage(i.getBuffer())
-                }
-                if (void 0 !== i) {
-                    const t = new e;
-                    t.writeUInt8(11),
-                    t.writeString16(i),
-                    this.sendMessage(t.getBuffer())
+                    break;
+                case 50:
+                    const x = e.readUInt8();
+                    for (let t = 0; t < x; t++) {
+                        const i = e.readUInt16()
+                          , s = e.readLongString8()
+                          , a = e.readUInt8()
+                          , o = e.readUInt8()
+                          , l = e.readUInt8()
+                          , r = new n(a, o, l).value;
+                        g.chatMessages.push({
+                            clientID: i,
+                            message: s,
+                            color: r,
+                            timestamp: Date.now()
+                        });
+                    }
+                    // Limit chat history to the last 50 messages
+                    if (g.chatMessages.length > 50) {
+                        g.chatMessages = g.chatMessages.slice(-50);
+                    }
+                    break;
+                case 60:
+                    const ping = e.readUInt16();
+                    g.stats.ping = ping;
+                    this.log(`Ping: ${ping}ms`);
+                    break;
+                case 70:
+                    const activePlayers = [];
+                    const count = e.readUInt8();
+                    for (let i = 0; i < count; i++) {
+                        const clientID = e.readUInt16();
+                        const nickname = e.readLongString16();
+                        const mass = e.readUInt32();
+                        activePlayers.push({ clientID, nickname, mass });
+                    }
+                    g.activePlayers = activePlayers;
+                    this.log(`Updated active players list: ${activePlayers.length} players`);
+                    break;
+                case 30:
+                    break;
+                case 40:
+                    e.readUInt16(),
+                    e.readUInt8(),
+                    e.readString16();
+                    break;
+                case 41:
+                    e.readUInt8(),
+                    e.readString16();
+                    break;
+                case 42:
+                    e.readUInt8(),
+                    e.readUInt8(),
+                    e.readUInt8(),
+                    e.readUInt8(),
+                    e.readUInt8(),
+                    e.readUInt8(),
+                    e.readUInt16();
+                    break;
+                case 43:
+                    e.readString16(),
+                    e.readUInt8(),
+                    e.readString16();
+                    break;
+                case 51:
+                    e.readUInt32();
+                    break;
                 }
             }
-        }
-        sendSpawn() {
-            if (!this.handshakeCompleted)
-                return;
-            const t = new e;
-            t.writeUInt8(0),
-            t.writeUInt8(this.multiboxID),
-            this.sendMessage(t.getBuffer())
-        }
-        sendSpectate() {
-            this.playing || (this.spectating = !0)
-        }
-        sendSplit(t=1) {
-            if (!this.handshakeCompleted)
-                return;
-            const i = new e;
-            i.writeUInt8(22),
-            i.writeUInt8(this.multiboxID),
-            i.writeUInt8(t),
-            this.sendMessage(i.getBuffer())
-        }
-        sendEject() {
-            if (!this.handshakeCompleted)
-                return;
-            const t = new e;
-            t.writeUInt8(23),
-            t.writeUInt8(this.multiboxID),
-            t.writeUInt8(Number(!1)),
-            this.sendMessage(t.getBuffer())
-        }
-        calculatePlayerPositionAndMass() {
-            let t = 0
-              , e = 0
-              , i = 0;
-            this.stores.ownedCells.forEach((s => {
-                t += s.mass,
-                e += s.x / this.stores.ownedCells.length,
-                i += s.y / this.stores.ownedCells.length
+            alloc() {
+                this.iframe.window.CanvasCaptureMediaStreamTrack || Object.assign(this.iframe.window.CanvasCaptureMediaStreamTrack, {}),
+                this.iframe.window.CanvasCaptureMediaStreamTrack.contextBufferFactory && (this.module._alloc(9, this.iframe.window.CanvasCaptureMediaStreamTrack.contextBufferFactory),
+                this.iframe.window.CanvasCaptureMediaStreamTrack.contextBufferFactory = null)
             }
-            )),
-            this.playerPoint.x = e,
-            this.playerPoint.y = i
-        }
-        updateBound() {
-            this.stores.cellsToRender.forEach((t => {
-                this.bound.left = t.targetX,
-                this.bound.right = t.targetX,
-                this.bound.top = t.targetY,
-                this.bound.bottom = t.targetY
+            allocArr(t) {
+                this.module._alloc(8, t)
             }
-            ))
-        }
-        updateStaticBound(t) {
-            this.bound.left > t.targetX - 0 + t.size && (this.bound.left = t.targetX - 0 + t.size),
-            this.bound.right < t.targetX - 0 - t.size && (this.bound.right = t.targetX - 0 - t.size),
-            this.bound.top > t.targetY - 0 + t.size && (this.bound.top = t.targetY - 0 + t.size),
-            this.bound.bottom < t.targetY - 0 - t.size && (this.bound.bottom = t.targetY - 0 - t.size)
-        }
-        isInViewHSLO(t, e, i) {
-            return !(t + i < this.bound.left || t - i > this.bound.right || e + i < this.bound.top || e - i > this.bound.bottom)
-        }
-        isInView(t) {
-            const e = this.bound
-              , i = t.size;
-            return !(t.x + i < e.left || t.x - i > e.right || t.y + i < e.top || t.y - i > e.bottom)
-        }
-        getTopCellByRank(t) {
-            return t < 1 ? null : [...this.stores.cellsToRender].sort(( (t, e) => e.size - t.size))[t - 1] || null
-        }
-        sendCaptcha(t, i) {
-            const s = new e;
-            s.writeUInt8(14),
-            s.writeUInt8(t),
-            s.writeLongString8(i),
-            this.sendMessage(s.getBuffer())
-        }
-        renderTurnstile() {
-            const overlay = document.createElement("div");
-            overlay.id = "turnstile-overlay";
-            Object.assign(overlay.style, {
-                position: "fixed",
-                top: "0",
-                left: "0",
-                width: "100vw",
-                height: "100vh",
-                background: "rgba(0, 0, 0, 0.7)",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                zIndex: "9999",
-                backdropFilter: "blur(4px)",
-                color: "#fff",
-                fontSize: "18px",
-                flexDirection: "column",
-                gap: "15px",
-                fontFamily: "Arial, sans-serif",
-                opacity: "0", // Start transparent
-                transition: "opacity 1.2s ease", // Smooth fade
-            });
-        
-            const loadingText = document.createElement("div");
-            loadingText.innerText = "Please complete captcha...";
-        
-            const spinner = document.createElement("div");
-            Object.assign(spinner.style, {
-                width: "40px",
-                height: "40px",
-                border: "4px solid rgba(255, 255, 255, 0.3)",
-                borderTop: "4px solid #fff",
-                borderRadius: "50%",
-                animation: "spin 1s linear infinite",
-            });
-        
-            const style = document.createElement("style");
-            style.textContent = `
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
+            onClose() {
+                this.cleanUp(),
+                this.iframe.deleteElement(),
+                this.websocket = null,
+                this.iframe = null,
+                this.log("Connection closed."),
+                this.emit("close", this)
+            }
+            onError(t) {
+                this.log("Connection error.", t),
+                this.emit("error")
+            }
+            sendMessage(t) {
+                this.isConnected && this.websocket.send(t)
+            }
+            sendAuth(t="null") {
+                const i = new e;
+                i.writeUInt8(13),
+                i.writeUInt16(t.length),
+                i.writeString16(t),
+                this.sendMessage(i.getBuffer())
+            }
+            sendCursorPosition(t, i) {
+                if (!this.handshakeCompleted)
+                    return;
+                const s = new e;
+                s.writeUInt8(20),
+                s.writeUInt8(this.spectating ? 1 : 0),
+                0 == this.spectating && s.writeUInt8(this.multiboxID),
+                s.writeInt32(t),
+                s.writeInt32(i),
+                this.sendMessage(s.getBuffer())
+            }
+            sendPlayerInfo({nickname: t, tag: i}) {
+                if (this.handshakeCompleted) {
+                    if (void 0 !== t) {
+                        const i = new e;
+                        i.writeUInt8(10),
+                        i.writeString16(t),
+                        this.sendMessage(i.getBuffer())
+                    }
+                    if (void 0 !== i) {
+                        const t = new e;
+                        t.writeUInt8(11),
+                        t.writeString16(i),
+                        this.sendMessage(i.getBuffer())
+                    }
                 }
-                #captcha-container iframe {
-                    border: none !important;
-                }
-            `;
-        
-            overlay.appendChild(style);
-            overlay.appendChild(spinner);
-            overlay.appendChild(loadingText);
-            document.body.appendChild(overlay);
-        
-            // Captcha container
-            const container = document.createElement("div");
-            container.id = "captcha-container";
-            Object.assign(container.style, {
-                width: "300px",
-                height: "65px",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-            });
-        
-            overlay.appendChild(container);
-        
-            // Render Turnstile captcha
-            turnstile.render(container, {
-                sitekey: "0x4AAAAAAACWFDYFT_opGqX8",
-                callback: (token) => {
-                    console.log("Turnstile Token:", token);
-                    this.sendCaptcha(1, token);
-                    toastr.success("Captcha", "Captcha completed!");
-                    document.body.removeChild(overlay);
-                },
-                "error-callback": () => {
-                    console.error("Turnstile failed to load.");
-                    document.body.removeChild(overlay);
-                },
-            });
-        
-            // Add a delay of 1 second before triggering the fade-in
-            setTimeout(() => {
-                requestAnimationFrame(() => {
-                    overlay.style.opacity = "1";
-                });
-            }, 500); // Delay of 1 second (1000ms)
-        }
-        
-        generateTurnstileToken(t, e, i) {
-            const s = `turnstileIframe-${Date.now()}`
-              , n = new URL(t).origin
-              , a = `\n            <!DOCTYPE html>\n            <html lang="en">\n            <head>\n                <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer><\/script>\n                <script>\n                    function EventModifier(evt, obj) {\n                        const proxy = new Proxy(evt, {\n                            get: (target, prop) => obj[prop] || target[prop]\n                        });\n                        return new evt.constructor(evt.type, proxy);\n                    }\n    \n                    window.addEventListener("load", function() {\n                        const originalSetAttribute = window.HTMLIFrameElement.prototype.setAttribute;\n                        window.HTMLIFrameElement.prototype.setAttribute = function(name, value) {\n                            if (name === 'src') {\n                                value += "#origin=" + "${n}";\n                            }\n                            originalSetAttribute.call(this, name, value);\n                        };\n    \n                        Element.prototype._addEventListener = Element.prototype.addEventListener;\n                        Element.prototype.addEventListener = function () {\n                            let args = [...arguments];\n                            let temp = args[1];\n                            args[1] = function () {\n                                let args2 = [...arguments];\n                                args2[0] = new EventModifier(args2[0], { isTrusted: true });\n                                return temp(...args2);\n                            };\n                            return this._addEventListener(...args);\n                        };\n    \n                        EventTarget.prototype._addEventListener = EventTarget.prototype.addEventListener;\n                        EventTarget.prototype.addEventListener = function () {\n                            let args = [...arguments];\n                            let temp = args[1];\n                            args[1] = function () {\n                                let args2 = [...arguments];\n                                args2[0] = new EventModifier(args2[0], { origin: unsafeWindow?.location?.hash?.split("origin=")[1] || args2[0].origin });\n                                return temp(...args2);\n                            };\n                            return this._addEventListener(...args);\n                        };\n    \n                        // Create the Turnstile challenge with the provided sitekey\n                        const turnstileContainer = document.createElement("div");\n                        turnstileContainer.className = "cf-turnstile";\n                        turnstileContainer.setAttribute("data-sitekey", "${e}");\n                        document.body.appendChild(turnstileContainer);\n    \n                        // Observe for the Turnstile checkbox and click it automatically\n                        const observer = new MutationObserver((mutationsList) => {\n                            for (const mutation of mutationsList) {\n                                if (mutation.type === "childList") {\n                                    const addedNodes = Array.from(mutation.addedNodes);\n                                    for (const addedNode of addedNodes) {\n                                        if (addedNode.nodeType === addedNode.ELEMENT_NODE) {\n                                            const node = addedNode?.querySelector("input[type=checkbox]");\n                                            if (node) {\n                                                node.parentElement.click(); // Click the checkbox if found\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        });\n    \n                        observer.observe(document.documentElement, {\n                            childList: true,\n                            subtree: true\n                        });\n    \n                        // Observe token generation\n                        const tokenObserver = new MutationObserver(function(mutations) {\n                            mutations.forEach(function(mutation) {\n                                if (mutation.type === "attributes" && mutation.attributeName === "value") {\n                                    const targetInput = mutation.target;\n                                    if (targetInput.name === "cf-turnstile-response") {\n                                        window.parent.postMessage({ id: "${s}", token: targetInput.value }, "*");\n                                    }\n                                }\n                            });\n                        });\n    \n                        tokenObserver.observe(document.documentElement, {\n                            attributes: true,\n                            attributeFilter: ["value"],\n                            subtree: true\n                        });\n    \n                    });\n                <\/script>\n            </head>\n            <body style="margin: 0; padding: 0; overflow: hidden;">\n            </body>\n            </html>\n        `
-              , o = document.createElement("iframe");
-            o.id = s,
-            o.srcdoc = a,
-            o.style.width = "0",
-            o.style.height = "0",
-            o.style.border = "none",
-            o.style.position = "absolute",
-            document.body.appendChild(o),
-            o.onload = () => {
-                o.contentWindow.location.origin = n,
-                o.src = t
             }
-            ,
-            window.addEventListener("message", (function(t) {
-                t.data && t.data.id === s && t.data.token && (i(t.data.token),
-                o.remove())
+            sendSpawn() {
+                if (!this.handshakeCompleted)
+                    return;
+                const t = new e;
+                t.writeUInt8(0),
+                t.writeUInt8(this.multiboxID),
+                this.sendMessage(t.getBuffer())
             }
-            ))
-        }
-        fullSync() {
-            Object.values(this.stores.cellsByID).forEach((t => t.destroy()));
-            const t = new e(1);
-            t.writeUInt8(31),
-            this.sendMessage(t.getBuffer())
-        }
-        close() {
-            this.websocket && this.websocket.close()
-        }
-        log(t, ...e) {
-            console.log("%c[Client]", "color: rgb(39, 176, 158); font-weight: bold;", t, ...e)
-        }
-    }
-    const g = new class {
-        constructor() {
-            this.settings = null,
-            this.menuVisible = !0,
-            this.indicatorActive = !1,
-            this.settingsVisible = !1,
-            this.playerInfo = {
-                customSkin1: null,
-                customSkin2: null,
-                nickname: null,
-                tag: null
-            },
-            this.stopMoving = !1,
-            this.bots = [],
-            this.spectators = [],
-            this.connecting = !1,
-            this.macroFeedInterval = null,
-            this.serverUrl = "wss://eu.senpa.io:2001/"
-        }
-        toggleMovement() {
-            this.stopMoving ? this.stopMoving = !1 : this.stopMoving = !0
-        }
-        createBot(t, e="") {
-            const i = new u("bot");
-            i.connect(this.serverUrl),
-            i.once("clientReady", ( () => {
-                console.log("Bot => Ready! Sending player info.."),
-                i.sendPlayerInfo({
-                    nickname: t,
-                    tag: e
-                }),
-                this.bots.push(i),
-                setTimeout(( () => i.sendSpawn()), 1e3),
-                i.on("playerAlive", ( () => {}
-                )),
-                i.on("playerDied", ( () => {
-                    setTimeout(( () => i.sendSpawn()), 1e3)
+            sendSpectate() {
+                this.playing || (this.spectating = !0)
+            }
+            sendSplit(t=1) {
+                if (!this.handshakeCompleted)
+                    return;
+                const i = new e;
+                i.writeUInt8(22),
+                i.writeUInt8(this.multiboxID),
+                i.writeUInt8(t),
+                this.sendMessage(i.getBuffer())
+            }
+            sendEject() {
+                if (!this.handshakeCompleted)
+                    return;
+                const t = new e;
+                t.writeUInt8(23),
+                t.writeUInt8(this.multiboxID),
+                t.writeUInt8(Number(!1)),
+                this.sendMessage(t.getBuffer())
+            }
+            calculatePlayerPositionAndMass() {
+                let t = 0
+                  , e = 0
+                  , i = 0;
+                this.stores.ownedCells.forEach((s => {
+                    t += s.mass,
+                    e += s.x / this.stores.ownedCells.length,
+                    i += s.y / this.stores.ownedCells.length
                 }
                 )),
-                i.on("close", (t => {
-                    this.bots.remove(t)
+                this.playerPoint.x = e,
+                this.playerPoint.y = i
+            }
+            updateBound() {
+                this.stores.cellsToRender.forEach((t => {
+                    this.bound.left = t.targetX,
+                    this.bound.right = t.targetX,
+                    this.bound.top = t.targetY,
+                    this.bound.bottom = t.targetY
                 }
                 ))
             }
-            ))
-        }
-        createSpectator(t) {
-            const e = new u("spectator");
-            e.spectatorIndex = t,
-            e.connect(this.serverUrl),
-            e.once("clientReady", ( () => {
-                this.spectators.push(e),
-                setTimeout(( () => e.sendSpectate()), 1e3)
+            updateStaticBound(t) {
+                this.bound.left > t.targetX - 0 + t.size && (this.bound.left = t.targetX - 0 + t.size),
+                this.bound.right < t.targetX - 0 - t.size && (this.bound.right = t.targetX - 0 - t.size),
+                this.bound.top > t.targetY - 0 + t.size && (this.bound.top = t.targetY - 0 + t.size),
+                this.bound.bottom < t.targetY - 0 - t.size && (this.bound.bottom = t.targetY - 0 - t.size)
             }
-            )),
-            e.once("close", (t => {
-                console.log("Removing specator", t),
-                this.spectators.remove(t),
-                console.log("Remaining spectators:", this.spectators)
+            isInViewHSLO(t, e, i) {
+                return !(t + i < this.bound.left || t - i > this.bound.right || e + i < this.bound.top || e - i > this.bound.bottom)
             }
-            ))
-        }
-        initClient(t, e) {
-            if (a.clients.length > 2)
-                return;
-            toastr.info("Connecting..", `Client (${t})`);
-            const i = new u(t);
-            return i.connect(e),
-            i.once("clientReady", (e => {
-                toastr.success("Connected!", `Client (${t})`),
-                a.addClient(e),
-                console.log("Sending player info..."),
-                e.sendPlayerInfo({
-                    nickname: this.playerInfo.nickname,
-                    tag: this.playerInfo.tag
-                })
+            isInView(t) {
+                const e = this.bound
+                  , i = t.size;
+                return !(t.x + i < e.left || t.x - i > e.right || t.y + i < e.top || t.y - i > e.bottom)
             }
-            )),
-            i.on("close", (e => {
-                toastr.warning("Connection closed.", `Client (${t})`),
-                a.removeClient(e)
+            getTopCellByRank(t) {
+                return t < 1 ? null : [...this.stores.cellsToRender].sort(( (t, e) => e.size - t.size))[t - 1] || null
             }
-            )),
-            i.on("playerDied", ( () => {
-                const e = a.getParent()
-                  , i = a.getChild();
-                "parent" === t && i && i.playing && this.settings.multiboxAutoSwitchOnDeath && a.setClient(i),
-                "child" === t && e && e.playing && this.settings.multiboxAutoSwitchOnDeath && a.setClient(e)
+            sendCaptcha(t, i) {
+                const s = new e;
+                s.writeUInt8(14),
+                s.writeUInt8(t),
+                s.writeLongString8(i),
+                this.sendMessage(s.getBuffer())
             }
-            )),
-            i
-        }
-        switchClient() {
-            const t = a.getActiveClient()
-              , e = a.getParent()
-              , i = a.getChild()
-              , s = a.totalPlaying();
-            if (!e && !this.connecting) {
-                this.connecting = !0;
-                const t = this.initClient("parent", this.serverUrl);
-                return t.once("clientReady", (t => {
-                    this.connecting = !1,
-                    t.sendSpawn()
+            renderTurnstile() {
+                const overlay = document.createElement("div");
+                overlay.id = "turnstile-overlay";
+                Object.assign(overlay.style, {
+                    position: "fixed",
+                    top: "0",
+                    left: "0",
+                    width: "100vw",
+                    height: "100vh",
+                    background: "rgba(0, 0, 0, 0.7)",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    zIndex: "9999",
+                    backdropFilter: "blur(4px)",
+                    color: "#fff",
+                    fontSize: "18px",
+                    flexDirection: "column",
+                    gap: "15px",
+                    fontFamily: "Arial, sans-serif",
+                    opacity: "0", // Start transparent
+                    transition: "opacity 1.2s ease", // Smooth fade
+                });
+            
+                const loadingText = document.createElement("div");
+                loadingText.innerText = "Please complete captcha...";
+            
+                const spinner = document.createElement("div");
+                Object.assign(spinner.style, {
+                    width: "40px",
+                    height: "40px",
+                    border: "4px solid rgba(255, 255, 255, 0.3)",
+                    borderTop: "4px solid #fff",
+                    borderRadius: "50%",
+                    animation: "spin 1s linear infinite",
+                });
+            
+                const style = document.createElement("style");
+                style.textContent = `
+                    @keyframes spin {
+                        0% { transform: rotate(0deg); }
+                        100% { transform: rotate(360deg); }
+                    }
+                    #captcha-container iframe {
+                        border: none !important;
+                    }
+                `;
+            
+                overlay.appendChild(style);
+                overlay.appendChild(spinner);
+                overlay.appendChild(loadingText);
+                document.body.appendChild(overlay);
+            
+                // Captcha container
+                const container = document.createElement("div");
+                container.id = "captcha-container";
+                Object.assign(container.style, {
+                    width: "300px",
+                    height: "65px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                });
+            
+                overlay.appendChild(container);
+            
+                // Render Turnstile captcha
+                turnstile.render(container, {
+                    sitekey: "0x4AAAAAAACWFDYFT_opGqX8",
+                    callback: (token) => {
+                        console.log("Turnstile Token:", token);
+                        this.sendCaptcha(1, token);
+                        toastr.success("Captcha", "Captcha completed!");
+                        document.body.removeChild(overlay);
+                    },
+                    "error-callback": () => {
+                        console.error("Turnstile failed to load.");
+                        document.body.removeChild(overlay);
+                    },
+                });
+            
+                // Add a delay of 1 second before triggering the fade-in
+                setTimeout(() => {
+                    requestAnimationFrame(() => {
+                        overlay.style.opacity = "1";
+                    });
+                }, 500); // Delay of 1 second (1000ms)
+            }
+            
+            generateTurnstileToken(t, e, i) {
+                const s = `turnstileIframe-${Date.now()}`
+                  , n = new URL(t).origin
+                  , a = `\n            <!DOCTYPE html>\n            <html lang="en">\n            <head>\n                <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer><\/script>\n                <script>\n                    function EventModifier(evt, obj) {\n                        const proxy = new Proxy(evt, {\n                            get: (target, prop) => obj[prop] || target[prop]\n                        });\n                        return new evt.constructor(evt.type, proxy);\n                    }\n    \n                    window.addEventListener("load", function() {\n                        const originalSetAttribute = window.HTMLIFrameElement.prototype.setAttribute;\n                        window.HTMLIFrameElement.prototype.setAttribute = function(name, value) {\n                            if (name === 'src') {\n                                value += "#origin=" + "${n}";\n                            }\n                            originalSetAttribute.call(this, name, value);\n                        };\n    \n                        Element.prototype._addEventListener = Element.prototype.addEventListener;\n                        Element.prototype.addEventListener = function () {\n                            let args = [...arguments];\n                            let temp = args[1];\n                            args[1] = function () {\n                                let args2 = [...arguments];\n                                args2[0] = new EventModifier(args2[0], { isTrusted: true });\n                                return temp(...args2);\n                            };\n                            return this._addEventListener(...args);\n                        };\n    \n                        EventTarget.prototype._addEventListener = EventTarget.prototype.addEventListener;\n                        EventTarget.prototype.addEventListener = function () {\n                            let args = [...arguments];\n                            let temp = args[1];\n                            args[1] = function () {\n                                let args2 = [...arguments];\n                                args2[0] = new EventModifier(args2[0], { origin: unsafeWindow?.location?.hash?.split("origin=")[1] || args2[0].origin });\n                                return temp(...args2);\n                            };\n                            return this._addEventListener(...args);\n                        };\n    \n                        // Create the Turnstile challenge with the provided sitekey\n                        const turnstileContainer = document.createElement("div");\n                        turnstileContainer.className = "cf-turnstile";\n                        turnstileContainer.setAttribute("data-sitekey", "${e}");\n                        document.body.appendChild(turnstileContainer);\n    \n                        // Observe for the Turnstile checkbox and click it automatically\n                        const observer = new MutationObserver((mutationsList) => {\n                            for (const mutation of mutationsList) {\n                                if (mutation.type === "childList") {\n                                    const addedNodes = Array.from(mutation.addedNodes);\n                                    for (const addedNode of addedNodes) {\n                                        if (addedNode.nodeType === addedNode.ELEMENT_NODE) {\n                                            const node = addedNode?.querySelector("input[type=checkbox]");\n                                            if (node) {\n                                                node.parentElement.click(); // Click the checkbox if found\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        });\n    \n                        observer.observe(document.documentElement, {\n                            childList: true,\n                            subtree: true\n                        });\n    \n                        // Observe token generation\n                        const tokenObserver = new MutationObserver(function(mutations) {\n                            mutations.forEach(function(mutation) {\n                                if (mutation.type === "attributes" && mutation.attributeName === "value") {\n                                    const targetInput = mutation.target;\n                                    if (targetInput.name === "cf-turnstile-response") {\n                                        window.parent.postMessage({ id: "${s}", token: targetInput.value }, "*");\n                                    }\n                                }\n                            });\n                        });\n    \n                        tokenObserver.observe(document.documentElement, {\n                            attributes: true,\n                            attributeFilter: ["value"],\n                            subtree: true\n                        });\n    \n                    });\n                <\/script>\n            </head>\n            <body style="margin: 0; padding: 0; overflow: hidden;">\n            </body>\n            </html>\n        `
+                  , o = document.createElement("iframe");
+                o.id = s,
+                o.srcdoc = a,
+                o.style.width = "0",
+                o.style.height = "0",
+                o.style.border = "none",
+                o.style.position = "absolute",
+                document.body.appendChild(o),
+                o.onload = () => {
+                    o.contentWindow.location.origin = n,
+                    o.src = t
                 }
-                )),
-                void t.on("close", ( () => this.connecting = !1))
+                ,
+                window.addEventListener("message", (function(t) {
+                    t.data && t.data.id === s && t.data.token && (i(t.data.token),
+                    o.remove())
+                }
+                ))
             }
-            if (0 === s && "child" === t?.clientType)
-                return a.setClient(e),
-                void e.sendSpawn();
-            if (!this.settings.multiboxAutoSwitchOnDeath && !t?.playing) {
-                if ("child" === t?.clientType && e?.playing)
-                    return void a.setClient(e);
-                if ("parent" === t?.clientType && i?.playing)
-                    return void a.setClient(i)
+            fullSync() {
+                Object.values(this.stores.cellsByID).forEach((t => t.destroy()));
+                const t = new e(1);
+                t.writeUInt8(31),
+                this.sendMessage(t.getBuffer())
             }
-            if ("parent" !== t?.clientType)
-                "child" === t?.clientType && (e.playing ? a.setClient(e) : (e.sendSpawn(),
-                e.once("playerAlive", ( () => a.setClient(e)))));
-            else if (t.playing)
-                if (i)
-                    i.playing ? a.setClient(i) : (i.sendSpawn(),
-                    i.once("playerAlive", ( () => a.setClient(i))));
-                else {
-                    const t = this.initClient("child", this.serverUrl);
-                    t.once("clientReady", ( () => {
-                        t.sendSpawn(),
-                        t.once("playerAlive", ( () => a.setClient(t)))
+            close() {
+                this.websocket && this.websocket.close()
+            }
+            log(t, ...e) {
+                console.log("%c[Client]", "color: rgb(39, 176, 158); font-weight: bold;", t, ...e)
+            }
+        }
+        const g = new class {
+            constructor() {
+                this.settings = null,
+                this.menuVisible = !0,
+                this.indicatorActive = !1,
+                this.settingsVisible = !1,
+                this.playerInfo = {
+                    customSkin1: null,
+                    customSkin2: null,
+                    nickname: null,
+                    tag: null
+                },
+                this.stopMoving = !1,
+                this.bots = [],
+                this.spectators = [],
+                this.connecting = !1,
+                this.macroFeedInterval = null,
+                this.serverUrl = "wss://eu.senpa.io:2001/",
+                this.stats = {
+                    ping: 0,
+                    fps: 0,
+                    ste: 0,
+                    mass: 0,
+                    lastServerUpdate: 0
+                },
+                this.chatMessages = [],
+                this.activePlayers = []
+            }
+            toggleMovement() {
+                this.stopMoving ? this.stopMoving = !1 : this.stopMoving = !0
+            }
+            createBot(t, e="") {
+                const i = new u("bot");
+                i.connect(this.serverUrl),
+                i.once("clientReady", ( () => {
+                    console.log("Bot => Ready! Sending player info.."),
+                    i.sendPlayerInfo({
+                        nickname: t,
+                        tag: e
+                    }),
+                    this.bots.push(i),
+                    setTimeout(( () => i.sendSpawn()), 1e3),
+                    i.on("playerAlive", ( () => {}
+                    )),
+                    i.on("playerDied", ( () => {
+                        setTimeout(( () => i.sendSpawn()), 1e3)
+                    }
+                    )),
+                    i.on("close", (t => {
+                        this.bots.remove(t)
                     }
                     ))
                 }
-            else
-                e.sendSpawn()
-        }
-        initializeSkinInputs() {
-            this.playerInfo.customSkin1 = localStorage.getItem("customSkin1") || null,
-            this.playerInfo.customSkin2 = localStorage.getItem("customSkin2") || null,
-            document.getElementById("skin1").value = this.playerInfo.customSkin1 || "",
-            document.getElementById("skin2").value = this.playerInfo.customSkin2 || "";
-            const t = t => {
-                const {id: e, value: i} = t.target;
-                "skin1" === e ? (this.playerInfo.customSkin1 = i,
-                localStorage.setItem("customSkin1", i)) : "skin2" === e && (this.playerInfo.customSkin2 = i,
-                localStorage.setItem("customSkin2", i))
+                ))
             }
-            ;
-            document.getElementById("skin1").addEventListener("input", t),
-            document.getElementById("skin2").addEventListener("input", t)
-        }
-        setCursor() {
-            document.body.style.cursor = 'url("./assets/images/cursors/cursor_01.cur"), auto'
-        }
-        start() {
-    console.log("TEST: This is a test line to confirm main.bundle.js is loaded locally.");
-    this.setCursor(),
-    this.handelResizing(),
-    this.handleESCKey(),
-    this.initSettingsTabs(),
-    this.initSettings(),
-    this.handleSettingsMenu(),
-    this.initPlayerControls(),
-    this.initMouseControls(),
-    this.initPlayerInputs(),
-    this.initializeSkinInputs()
-}
-        handelResizing() {
-            const t = () => {
-                const t = document.getElementById("menu-display-center")
-                  , e = document.getElementById("settings-display-center")
-                  , i = document.getElementById("gallery-display-center")
-                  , s = window.innerWidth
-                  , n = window.innerHeight
-                  , a = s < 1200 ? s / 1200 : 1
-                  , o = n < 800 ? n / 800 : 1
-                  , l = Math.min(a, o);
-                t.style.transform = `translate(-50%, -50%) scale(${l})`,
-                e.style.transform = `translate(-50%, -50%) scale(${l})`,
-                i.style.transform = `translate(-50%, -50%) scale(${l})`
-            }
-            ;
-            window.addEventListener("resize", t),
-            t()
-        }
-        handleESCKey() {
-            let t = !1;
-            document.addEventListener("keydown", (e => {
-                if ("Escape" === e.code && !t) {
-                    if ("Escape" === e.code && this.settingsVisible)
-                        return void e.preventDefault();
-                    t = !0,
-                    document.getElementById("menu-display") && this.toggleMenuVisibility()
-                }
-            }
-            )),
-            document.addEventListener("keyup", (e => {
-                "Escape" === e.code && (t = !1)
-            }
-            ))
-        }
-        toggleMenuVisibility() {
-            const t = document.getElementById("menu-display");
-            t && (this.menuVisible = !this.menuVisible,
-            this.setElementVisibility(t, this.menuVisible))
-        }
-        setElementVisibility(t, e) {
-            t && (e ? (t.classList.remove("hidden"),
-            t.classList.add("visible")) : (t.classList.remove("visible"),
-            t.classList.add("hidden")))
-        }
-        handleSettingsMenu() {
-            const t = document.getElementById("open-settings")
-              , e = document.getElementById("settings-close-btn")
-              , i = document.getElementById("settings-display");
-            e.addEventListener("click", ( () => {
-                this.setElementVisibility(i, !1),
-                this.settingsVisible = !1
-            }
-            )),
-            t.addEventListener("click", ( () => {
-                this.setElementVisibility(i, !0),
-                this.settingsVisible = !0
-            }
-            ))
-        }
-        
-        
-        initPlayerInputs() {
-            const t = document.getElementById("nickname")
-              , e = document.getElementById("tag")
-              , i = document.getElementById("play")
-              , s = document.getElementById("spectate")
-              , n = document.getElementById("menu-display")
-              , o = document.getElementById("servers")
-              , l = document.getElementById("restart");
-            this.playerInfo.nickname = t.value = localStorage.getItem("ogarx:nickname") || "",
-            this.playerInfo.tag = e.value = localStorage.getItem("ogarx:tag") || "";
-            const r = localStorage.getItem("ogarx:server") || o.options[0].value;
-            o.value = r,
-            this.serverUrl = r,
-            this.initClient("parent", this.serverUrl),
-            t.addEventListener("input", ( () => {
-                this.playerInfo.nickname = t.value,
-                a.clients.length && a.clients.forEach((t => {
-                    t.sendPlayerInfo({
-                        nickname: this.playerInfo.nickname
-                    })
+            createSpectator(t) {
+                const e = new u("spectator");
+                e.spectatorIndex = t,
+                e.connect(this.serverUrl),
+                e.once("clientReady", ( () => {
+                    this.spectators.push(e),
+                    setTimeout(( () => e.sendSpectate()), 1e3)
                 }
                 )),
-                localStorage.setItem("ogarx:nickname", t.value)
+                e.once("close", (t => {
+                    console.log("Removing specator", t),
+                    this.spectators.remove(t),
+                    console.log("Remaining spectators:", this.spectators)
+                }
+                ))
             }
-            )),
-            e.addEventListener("input", ( () => {
-                this.playerInfo.tag = e.value,
-                a.clients.forEach((t => {
-                    t.sendPlayerInfo({
+            initClient(t, e) {
+                if (a.clients.length > 2)
+                    return;
+                toastr.info("Connecting..", `Client (${t})`);
+                const i = new u(t);
+                return i.connect(e),
+                i.once("clientReady", (e => {
+                    toastr.success("Connected!", `Client (${t})`),
+                    a.addClient(e),
+                    console.log("Sending player info..."),
+                    e.sendPlayerInfo({
+                        nickname: this.playerInfo.nickname,
                         tag: this.playerInfo.tag
                     })
                 }
                 )),
-                localStorage.setItem("ogarx:tag", e.value)
-            }
-            )),
-            o.addEventListener("change", ( () => {
-                const t = o.value;
-                localStorage.setItem("ogarx:server", t),
-                this.serverUrl = t,
-                a.clients.length ? a.clients.forEach((t => {
-                    t.close(),
-                    t.on("close", ( () => this.initClient("parent", this.serverUrl)))
+                i.on("close", (e => {
+                    toastr.warning("Connection closed.", `Client (${t})`),
+                    a.removeClient(e)
                 }
-                )) : this.initClient("parent", this.serverUrl)
-            }
-            )),
-            l.addEventListener("click", ( () => {
-                a.clients.length ? a.clients.forEach((t => {
-                    t.close(),
-                    t.on("close", ( () => this.initClient("parent", this.serverUrl)))
+                )),
+                i.on("playerDied", ( () => {
+                    const e = a.getParent()
+                      , i = a.getChild();
+                    "parent" === t && i && i.playing && this.settings.multiboxAutoSwitchOnDeath && a.setClient(i),
+                    "child" === t && e && e.playing && this.settings.multiboxAutoSwitchOnDeath && a.setClient(e)
                 }
-                )) : this.initClient("parent", this.serverUrl)
+                )),
+                i
             }
-            )),
-            i.addEventListener("click", ( () => {
-                const t = a.getActiveClient();
-                t && t.sendSpawn(),
-                this.setElementVisibility(n, !1),
-                this.menuVisible = !1
+            switchClient() {
+                const t = a.getActiveClient()
+                  , e = a.getParent()
+                  , i = a.getChild()
+                  , s = a.totalPlaying();
+                if (!e && !this.connecting) {
+                    this.connecting = !0;
+                    const t = this.initClient("parent", this.serverUrl);
+                    return t.once("clientReady", (t => {
+                        this.connecting = !1,
+                        t.sendSpawn()
+                    }
+                    )),
+                    void t.on("close", ( () => this.connecting = !1))
+                }
+                if (0 === s && "child" === t?.clientType)
+                    return a.setClient(e),
+                    void e.sendSpawn();
+                if (!this.settings.multiboxAutoSwitchOnDeath && !t?.playing) {
+                    if ("child" === t?.clientType && e?.playing)
+                        return void a.setClient(e);
+                    if ("parent" === t?.clientType && i?.playing)
+                        return void a.setClient(i)
+                }
+                if ("parent" !== t?.clientType)
+                    "child" === t?.clientType && (e.playing ? a.setClient(e) : (e.sendSpawn(),
+                    e.once("playerAlive", ( () => a.setClient(e)))));
+                else if (t.playing)
+                    if (i)
+                        i.playing ? a.setClient(i) : (i.sendSpawn(),
+                        i.once("playerAlive", ( () => a.setClient(i))));
+                    else {
+                        const t = this.initClient("child", this.serverUrl);
+                        t.once("clientReady", ( () => {
+                            t.sendSpawn(),
+                            t.once("playerAlive", ( () => a.setClient(t)))
+                        }
+                        ))
+                    }
+                else
+                    e.sendSpawn()
             }
-            )),
-            s.addEventListener("click", ( () => {
-                const t = a.getActiveClient();
-                t && t.sendSpectate(),
-                this.setElementVisibility(n, !1),
-                this.menuVisible = !1
+            initializeSkinInputs() {
+                this.playerInfo.customSkin1 = localStorage.getItem("customSkin1") || null,
+                this.playerInfo.customSkin2 = localStorage.getItem("customSkin2") || null,
+                document.getElementById("skin1").value = this.playerInfo.customSkin1 || "",
+                document.getElementById("skin2").value = this.playerInfo.customSkin2 || "";
+                const t = t => {
+                    const {id: e, value: i} = t.target;
+                    "skin1" === e ? (this.playerInfo.customSkin1 = i,
+                    localStorage.setItem("customSkin1", i)) : "skin2" === e && (this.playerInfo.customSkin2 = i,
+                    localStorage.setItem("customSkin2", i))
+                }
+                ;
+                document.getElementById("skin1").addEventListener("input", t),
+                document.getElementById("skin2").addEventListener("input", t)
             }
-            ))
-        }
-        initPlayerControls() {
-            const t = document.querySelectorAll(".hotkey-input");
-            let e = null;
-            const i = new Set;
-            let s, n = null;
-            t.forEach((t => {
-                const e = localStorage.getItem(t.id);
-                e ? t.value = e : localStorage.setItem(t.id, t.value)
+            setCursor() {
+                document.body.style.cursor = 'url("./assets/images/cursors/cursor_01.cur"), auto'
             }
-            )),
-            t.forEach((t => {
-                t.addEventListener("focus", ( () => {
-                    e && e !== t && (e.classList.remove("selected"),
-                    e = null),
-                    e = t,
-                    t.classList.add("selected"),
-                    t.value = "",
-                    t.addEventListener("keydown", (function(i) {
-                        if (i.preventDefault(),
-                        "Escape" === i.code)
-                            return i.preventDefault(),
+            start() {
+                console.log("TEST: This is a test line to confirm main.bundle.js is loaded locally.");
+                this.setCursor(),
+                this.handelResizing(),
+                this.handleESCKey(),
+                this.initSettingsTabs(),
+                this.initSettings(),
+                this.handleSettingsMenu(),
+                this.initPlayerControls(),
+                this.initMouseControls(),
+                this.initPlayerInputs(),
+                this.initializeSkinInputs()
+            }
+            handelResizing() {
+                const t = () => {
+                    const t = document.getElementById("menu-display-center")
+                      , e = document.getElementById("settings-display-center")
+                      , i = document.getElementById("gallery-display-center")
+                      , s = window.innerWidth
+                      , n = window.innerHeight
+                      , a = s < 1200 ? s / 1200 : 1
+                      , o = n < 800 ? n / 800 : 1
+                      , l = Math.min(a, o);
+                    t.style.transform = `translate(-50%, -50%) scale(${l})`,
+                    e.style.transform = `translate(-50%, -50%) scale(${l})`,
+                    i.style.transform = `translate(-50%, -50%) scale(${l})`
+                }
+                ;
+                window.addEventListener("resize", t),
+                t()
+            }
+            handleESCKey() {
+                let t = !1;
+                document.addEventListener("keydown", (e => {
+                    if ("Escape" === e.code && !t) {
+                        if ("Escape" === e.code && this.settingsVisible)
+                            return void e.preventDefault();
+                        t = !0,
+                        document.getElementById("menu-display") && this.toggleMenuVisibility()
+                    }
+                }
+                )),
+                document.addEventListener("keyup", (e => {
+                    "Escape" === e.code && (t = !1)
+                }
+                ))
+            }
+            toggleMenuVisibility() {
+                const t = document.getElementById("menu-display");
+                t && (this.menuVisible = !this.menuVisible,
+                this.setElementVisibility(t, this.menuVisible))
+            }
+            setElementVisibility(t, e) {
+                t && (e ? (t.classList.remove("hidden"),
+                t.classList.add("visible")) : (t.classList.remove("visible"),
+                t.classList.add("hidden")))
+            }
+            handleSettingsMenu() {
+                const t = document.getElementById("open-settings")
+                  , e = document.getElementById("settings-close-btn")
+                  , i = document.getElementById("settings-display");
+                e.addEventListener("click", ( () => {
+                    this.setElementVisibility(i, !1),
+                    this.settingsVisible = !1
+                }
+                )),
+                t.addEventListener("click", ( () => {
+                    this.setElementVisibility(i, !0),
+                    this.settingsVisible = !0
+                }
+                ))
+            }
+            initPlayerInputs() {
+                const t = document.getElementById("nickname")
+                  , e = document.getElementById("tag")
+                  , i = document.getElementById("play")
+                  , s = document.getElementById("spectate")
+                  , n = document.getElementById("menu-display")
+                  , o = document.getElementById("servers")
+                  , l = document.getElementById("restart");
+                this.playerInfo.nickname = t.value = localStorage.getItem("ogarx:nickname") || "",
+                this.playerInfo.tag = e.value = localStorage.getItem("ogarx:tag") || "";
+                const r = localStorage.getItem("ogarx:server") || o.options[0].value;
+                o.value = r,
+                this.serverUrl = r,
+                this.initClient("parent", this.serverUrl),
+                t.addEventListener("input", ( () => {
+                    this.playerInfo.nickname = t.value,
+                    a.clients.length && a.clients.forEach((t => {
+                        t.sendPlayerInfo({
+                            nickname: this.playerInfo.nickname
+                        })
+                    }
+                    )),
+                    localStorage.setItem("ogarx:nickname", t.value)
+                }
+                )),
+                e.addEventListener("input", ( () => {
+                    this.playerInfo.tag = e.value,
+                    a.clients.forEach((t => {
+                        t.sendPlayerInfo({
+                            tag: this.playerInfo.tag
+                        })
+                    }
+                    )),
+                    localStorage.setItem("ogarx:tag", e.value)
+                }
+                )),
+                o.addEventListener("change", ( () => {
+                    const t = o.value;
+                    localStorage.setItem("ogarx:server", t),
+                    this.serverUrl = t,
+                    a.clients.length ? a.clients.forEach((t => {
+                        t.close(),
+                        t.on("close", ( () => this.initClient("parent", this.serverUrl)))
+                    }
+                    )) : this.initClient("parent", this.serverUrl)
+                }
+                )),
+                l.addEventListener("click", ( () => {
+                    a.clients.length ? a.clients.forEach((t => {
+                        t.close(),
+                        t.on("close", ( () => this.initClient("parent", this.serverUrl)))
+                    }
+                    )) : this.initClient("parent", this.serverUrl)
+                }
+                )),
+                i.addEventListener("click", ( () => {
+                    const t = a.getActiveClient();
+                    t && t.sendSpawn(),
+                    this.setElementVisibility(n, !1),
+                    this.menuVisible = !1
+                }
+                )),
+                s.addEventListener("click", ( () => {
+                    const t = a.getActiveClient();
+                    t && t.sendSpectate(),
+                    this.setElementVisibility(n, !1),
+                    this.menuVisible = !1
+                }
+                ))
+            }
+            initPlayerControls() {
+                const t = document.querySelectorAll(".hotkey-input");
+                let e = null;
+                const i = new Set;
+                let s, n = null;
+                t.forEach((t => {
+                    const e = localStorage.getItem(t.id);
+                    e ? t.value = e : localStorage.setItem(t.id, t.value)
+                }
+                )),
+                t.forEach((t => {
+                    t.addEventListener("focus", ( () => {
+                        e && e !== t && (e.classList.remove("selected"),
+                        e = null),
+                        e = t,
+                        t.classList.add("selected"),
+                        t.value = "",
+                        t.addEventListener("keydown", (function(i) {
+                            if (i.preventDefault(),
+                            "Escape" === i.code)
+                                return i.preventDefault(),
+                                t.classList.remove("selected"),
+                                void (e = null);
+                            "Tab" === i.code && i.preventDefault();
+                            const s = i.code;
+                            t.value = s,
+                            localStorage.setItem(t.id, s),
                             t.classList.remove("selected"),
-                            void (e = null);
-                        "Tab" === i.code && i.preventDefault();
-                        const s = i.code;
-                        t.value = s,
-                        localStorage.setItem(t.id, s),
-                        t.classList.remove("selected"),
-                        e = null
+                            e = null
+                        }
+                        ))
+                    }
+                    ))
+                }
+                )),
+                document.addEventListener("keydown", (e => {
+                    "Escape" !== e.code ? i.has(e.code) || (i.add(e.code),
+                    t.forEach((t => {
+                        localStorage.getItem(t.id) === e.code && this.triggerAction(t.id, e)
+                    }
+                    )),
+                    t.forEach((t => {
+                        t.value !== e.code || "macroFeedKey" !== t.id || n || (n = setInterval(( () => {
+                            const t = a.getActiveClient();
+                            t && t.sendEject()
+                        }
+                        ), 40)),
+                        t.value === e.code && "botFeed" === t.id && !s && this.bots.length && (s = setInterval(( () => {
+                            this.bots.forEach((t => {
+                                t.sendEject()
+                            }
+                            ))
+                        }
+                        ), 40))
+                    }
+                    ))) : e.preventDefault()
+                }
+                )),
+                document.addEventListener("keyup", (e => {
+                    i.delete(e.code),
+                    t.forEach((t => {
+                        t.value === e.code && "macroFeedKey" === t.id && n && (clearInterval(n),
+                        n = null),
+                        t.value === e.code && "botFeed" === t.id && s && (clearInterval(s),
+                        s = null)
                     }
                     ))
                 }
                 ))
             }
-            )),
-            document.addEventListener("keydown", (e => {
-                "Escape" !== e.code ? i.has(e.code) || (i.add(e.code),
-                t.forEach((t => {
-                    localStorage.getItem(t.id) === e.code && this.triggerAction(t.id, e)
+            triggerAction(t, e) {
+                if (this.menuVisible)
+                    return;
+                if (this.settingsVisible)
+                    return;
+                const i = a.getActiveClient()
+                  , s = a.totalPlaying();
+                switch (t) {
+                case "macroFeedKey":
+                case "botFeed":
+                    break;
+                case "splitKey":
+                    if (!i)
+                        return;
+                    i.sendSplit(1);
+                    break;
+                case "doubleSplitKey":
+                    if (!i)
+                        return;
+                    i.sendSplit(2);
+                    break;
+                case "tricksplitKey":
+                    if (!i)
+                        return;
+                    i.sendSplit(4);
+                    break;
+                case "DualSplit16key":
+                    if (!i)
+                        return;
+                    s > 1 && a.clients.forEach((t => t.sendSplit(4)));
+                    break;
+                case "switchPlayerkey":
+                    e.preventDefault(),
+                    this.switchClient();
+                    break;
+                case "botSplit":
+                    this.bots.length && this.bots.forEach((t => {
+                        t.sendSplit(1)
+                    }
+                    ));
+                    break;
+                case "cellPause":
+                    this.toggleMovement();
+                    break;
+                default:
+                    console.log(`Action for ${t} not defined`)
+                }
+            }
+            initMouseControls() {
+                const t = document.getElementById("leftClick")
+                  , e = document.getElementById("middleClick")
+                  , i = document.getElementById("rightClick");
+                t.addEventListener("change", ( () => {
+                    this.setMouseAction("leftClick", t.value)
                 }
                 )),
-                t.forEach((t => {
-                    t.value !== e.code || "macroFeedKey" !== t.id || n || (n = setInterval(( () => {
-                        const t = a.getActiveClient();
-                        t && t.sendEject()
-                    }
-                    ), 40)),
-                    t.value === e.code && "botFeed" === t.id && !s && this.bots.length && (s = setInterval(( () => {
-                        this.bots.forEach((t => {
-                            t.sendEject()
-                        }
-                        ))
-                    }
-                    ), 40))
+                e.addEventListener("change", ( () => {
+                    this.setMouseAction("middleClick", e.value)
                 }
-                ))) : e.preventDefault()
+                )),
+                i.addEventListener("change", ( () => {
+                    this.setMouseAction("rightClick", i.value)
+                }
+                )),
+                this.setupMouseListeners()
             }
-            )),
-            document.addEventListener("keyup", (e => {
-                i.delete(e.code),
-                t.forEach((t => {
-                    t.value === e.code && "macroFeedKey" === t.id && n && (clearInterval(n),
-                    n = null),
-                    t.value === e.code && "botFeed" === t.id && s && (clearInterval(s),
-                    s = null)
+            setMouseAction(t, e) {
+                localStorage.setItem(`${t}Action`, e)
+            }
+            triggerMouseAction(t) {
+                const e = localStorage.getItem(`${t}Action`)
+                  , i = a.getActiveClient()
+                  , s = a.totalPlaying();
+                "macroFeed" === e ? i && (this[`macroFeedInterval_${t}`] || (this[`macroFeedInterval_${t}`] = setInterval(( () => {
+                    a.getActiveClient().sendEject()
+                }
+                ), 40))) : "split" === e ? i && i.sendSplit(1) : "doubleSplit" === e ? i && i.sendSplit(2) : "tricksplit" === e ? i && i.sendSplit(4) : "switchPlayer" === e ? this.switchClient() : "DualSplit16" === e && s > 1 && a.clients.forEach((t => t.sendSplit(4)))
+            }
+            clearMacroFeed(t) {
+                this[`macroFeedInterval_${t}`] && (clearInterval(this[`macroFeedInterval_${t}`]),
+                this[`macroFeedInterval_${t}`] = null)
+            }
+            setupMouseListeners() {
+                localStorage.getItem("leftClickAction") || localStorage.setItem("leftClickAction", "tricksplit"),
+                localStorage.getItem("middleClickAction") || localStorage.setItem("middleClickAction", "noAction"),
+                localStorage.getItem("rightClickAction") || localStorage.setItem("rightClickAction", "noAction"),
+                document.addEventListener("mousedown", (t => {
+                    if (this.menuVisible || this.settingsVisible)
+                        return;
+                    const e = 0 === t.button ? "leftClick" : 1 === t.button ? "middleClick" : "rightClick";
+                    this.triggerMouseAction(e)
+                }
+                )),
+                document.addEventListener("mouseup", (t => {
+                    const e = 0 === t.button ? "leftClick" : 1 === t.button ? "middleClick" : "rightClick";
+                    this.clearMacroFeed(e)
+                }
+                )),
+                document.addEventListener("contextmenu", (t => {
+                    t.preventDefault()
                 }
                 ))
             }
-            ))
-        }
-        triggerAction(t, e) {
-            if (this.menuVisible)
-                return;
-            if (this.settingsVisible)
-                return;
-            const i = a.getActiveClient()
-              , s = a.totalPlaying();
-            switch (t) {
-            case "macroFeedKey":
-            case "botFeed":
-                break;
-            case "splitKey":
-                if (!i)
-                    return;
-                i.sendSplit(1);
-                break;
-            case "doubleSplitKey":
-                if (!i)
-                    return;
-                i.sendSplit(2);
-                break;
-            case "tricksplitKey":
-                if (!i)
-                    return;
-                i.sendSplit(4);
-                break;
-            case "DualSplit16key":
-                if (!i)
-                    return;
-                s > 1 && a.clients.forEach((t => t.sendSplit(4)));
-                break;
-            case "switchPlayerkey":
-                e.preventDefault(),
-                this.switchClient();
-                break;
-            case "botSplit":
-                this.bots.length && this.bots.forEach((t => {
-                    t.sendSplit(1)
+            initSettingsTabs() {
+                const t = document.querySelectorAll(".tab")
+                  , e = document.querySelectorAll(".tab-content");
+                function i(i) {
+                    const s = i.currentTarget;
+                    t.forEach((t => t.classList.remove("active"))),
+                    e.forEach((t => t.classList.remove("active"))),
+                    s.classList.add("active");
+                    const n = s.getAttribute("data-tab")
+                      , a = document.getElementById(n);
+                    a && a.classList.add("active")
                 }
-                ));
-                break;
-            case "cellPause":
-                this.toggleMovement();
-                break;
-            default:
-                console.log(`Action for ${t} not defined`)
+                t.forEach((t => {
+                    t.addEventListener("click", i)
+                }
+                ))
             }
-        }
-        initMouseControls() {
-            const t = document.getElementById("leftClick")
-              , e = document.getElementById("middleClick")
-              , i = document.getElementById("rightClick");
-            t.addEventListener("change", ( () => {
-                this.setMouseAction("leftClick", t.value)
+            initSettings() {
+                this.settings = JSON.parse(localStorage.getItem("ogarx:settings")) || {
+                    animationDelay: 140,
+                    cellTransparency: 1,
+                    showNicknames: !0,
+                    showMass: !0,
+                    showSkins: !0,
+                    showGrid: !0,
+                    showSectors: !1,
+                    showPellets: !0,
+                    cursorTracking: !1,
+                    showDebug: !1,
+                    multiboxAutoSwitchOnDeath: !0,
+                    MBColor1: "#FFFFFF",
+                    MBColor2: "#00B9E8",
+                    ringWidth: 10,
+                    cellSpeed: 0,
+                    showIndicator: !1,
+                    showRings: !0
+                },
+                this.bindSlider("animationDelay", "animationDelay", "animationDelayValue"),
+                this.bindSlider("cellTransparency", "cellTransparency", "cellTransparencyValue"),
+                this.bindSlider("ringWidth", "ringWidth", "ringWidthValue"),
+                this.bindSlider("cellSpeed", "cellSpeed", "cellSpeedValue"),
+                this.bindToggleSwitch("showNicknames", "showNicknames"),
+                this.bindToggleSwitch("showRings", "showRings"),
+                this.bindToggleSwitch("showIndicator", "showIndicator"),
+                this.bindToggleSwitch("showMass", "showMass"),
+                this.bindToggleSwitch("showSkins", "showSkins"),
+                this.bindToggleSwitch("showGrid", "showGrid"),
+                this.bindToggleSwitch("showSectors", "showSectors"),
+                this.bindToggleSwitch("showPellets", "showPellets"),
+                this.bindToggleSwitch("cursorTracking", "cursorTracking"),
+                this.bindToggleSwitch("showDebug", "showDebug"),
+                this.bindToggleSwitch("multiboxAutoSwitchOnDeath", "multiboxAutoSwitchOnDeath"),
+                this.bindColorInput("MBColor1", "MBColor1"),
+                this.bindColorInput("MBColor2", "MBColor2");
             }
-            )),
-            e.addEventListener("change", ( () => {
-                this.setMouseAction("middleClick", e.value)
-            }
-            )),
-            i.addEventListener("change", ( () => {
-                this.setMouseAction("rightClick", i.value)
-            }
-            )),
-            this.setupMouseListeners()
-        }
-        setMouseAction(t, e) {
-            localStorage.setItem(`${t}Action`, e)
-        }
-        triggerMouseAction(t) {
-            const e = localStorage.getItem(`${t}Action`)
-              , i = a.getActiveClient()
-              , s = a.totalPlaying();
-            "macroFeed" === e ? i && (this[`macroFeedInterval_${t}`] || (this[`macroFeedInterval_${t}`] = setInterval(( () => {
-                a.getActiveClient().sendEject()
-            }
-            ), 40))) : "split" === e ? i && i.sendSplit(1) : "doubleSplit" === e ? i && i.sendSplit(2) : "tricksplit" === e ? i && i.sendSplit(4) : "switchPlayer" === e ? this.switchClient() : "DualSplit16" === e && s > 1 && a.clients.forEach((t => t.sendSplit(4)))
-        }
-        clearMacroFeed(t) {
-            this[`macroFeedInterval_${t}`] && (clearInterval(this[`macroFeedInterval_${t}`]),
-            this[`macroFeedInterval_${t}`] = null)
-        }
-        setupMouseListeners() {
-            localStorage.getItem("leftClickAction") || localStorage.setItem("leftClickAction", "tricksplit"),
-            localStorage.getItem("middleClickAction") || localStorage.setItem("middleClickAction", "noAction"),
-            localStorage.getItem("rightClickAction") || localStorage.setItem("rightClickAction", "noAction"),
-            document.addEventListener("mousedown", (t => {
-                if (this.menuVisible || this.settingsVisible)
-                    return;
-                const e = 0 === t.button ? "leftClick" : 1 === t.button ? "middleClick" : "rightClick";
-                this.triggerMouseAction(e)
-            }
-            )),
-            document.addEventListener("mouseup", (t => {
-                const e = 0 === t.button ? "leftClick" : 1 === t.button ? "middleClick" : "rightClick";
-                this.clearMacroFeed(e)
-            }
-            )),
-            document.addEventListener("contextmenu", (t => {
-                t.preventDefault()
-            }
-            ))
-        }
-        initSettingsTabs() {
-            const t = document.querySelectorAll(".tab")
-              , e = document.querySelectorAll(".tab-content");
-            function i(i) {
-                const s = i.currentTarget;
-                t.forEach((t => t.classList.remove("active"))),
-                e.forEach((t => t.classList.remove("active"))),
-                s.classList.add("active");
-                const n = s.getAttribute("data-tab")
-                  , a = document.getElementById(n);
-                a && a.classList.add("active")
-            }
-            t.forEach((t => {
-                t.addEventListener("click", i)
-            }
-            ))
-        }
-        initSettings() {
-            this.settings = JSON.parse(localStorage.getItem("ogarx:settings")) || {
-                animationDelay: 140,
-                cellTransparency: 1,
-                showNicknames: !0,
-                showMass: !0,
-                showSkins: !0,
-                showGrid: !0,
-                showSectors: !1,
-                showPellets: !0,
-                cursorTracking: !1,
-                showDebug: !1,
-                multiboxAutoSwitchOnDeath: !0,
-                MBColor1: "#FFFFFF",
-                MBColor2: "#00B9E8",
-                ringWidth: 10,
-                cellSpeed: 0,
-                showIndicator: !1,
-                showRings: !0
-
-            },
-            this.bindSlider("animationDelay", "animationDelay", "animationDelayValue"),
-            this.bindSlider("cellTransparency", "cellTransparency", "cellTransparencyValue"),
-            this.bindSlider("ringWidth", "ringWidth", "ringWidthValue"),
-            this.bindSlider("cellSpeed", "cellSpeed", "cellSpeedValue"),
-            this.bindToggleSwitch("showNicknames", "showNicknames"),
-            this.bindToggleSwitch("showRings", "showRings"),
-            this.bindToggleSwitch("showIndicator", "showIndicator"),
-            this.bindToggleSwitch("showMass", "showMass"),
-            this.bindToggleSwitch("showSkins", "showSkins"),
-            this.bindToggleSwitch("showGrid", "showGrid"),
-            this.bindToggleSwitch("showSectors", "showSectors"),
-            this.bindToggleSwitch("showPellets", "showPellets"),
-            this.bindToggleSwitch("cursorTracking", "cursorTracking"),
-            this.bindToggleSwitch("showDebug", "showDebug"),
-            this.bindToggleSwitch("multiboxAutoSwitchOnDeath", "multiboxAutoSwitchOnDeath")
-            this.bindColorInput("MBColor1", "MBColor1")
-            this.bindColorInput("MBColor2", "MBColor2");
-        }
-        bindSlider(t, e, i) {
-            const s = document.getElementById(e),
-                  n = document.getElementById(i);
-            if (!s)
-                return void console.warn(`Slider with id "${e}" not found.`);
-            if (!n)
-                return void console.warn(`Display element with id "${i}" not found.`);
+            bindSlider(t, e, i) {
+                const s = document.getElementById(e),
+                      n = document.getElementById(i);
+                if (!s)
+                    return void console.warn(`Slider with id "${e}" not found.`);
+                if (!n)
+                    return void console.warn(`Display element with id "${i}" not found.`);
+                
+                const a = this.settings[t];
+                s.value = a;
+                n.textContent = a; // Display normal value
             
-            const a = this.settings[t];
-            s.value = a;
-            n.textContent = a; // Display normal value
-        
-            s.addEventListener("input", (e) => {
-                const value = parseFloat(e.target.value);
-                this.settings[t] = value;
-                n.textContent = value;
-        
-                localStorage.setItem("ogarx:settings", JSON.stringify(this.settings));
-            });
-        }
-        bindColorInput(settingKey, inputId) {
-            const input = document.getElementById(inputId);
-            if (!input) {
-                console.warn(`Color input with id "${inputId}" not found.`);
-                return;
+                s.addEventListener("input", (e) => {
+                    const value = parseFloat(e.target.value);
+                    this.settings[t] = value;
+                    n.textContent = value;
+            
+                    localStorage.setItem("ogarx:settings", JSON.stringify(this.settings));
+                });
             }
-
-            // Load saved color if available
-            if (this.settings[settingKey]) {
-                input.value = this.settings[settingKey];
+            bindColorInput(settingKey, inputId) {
+                const input = document.getElementById(inputId);
+                if (!input) {
+                    console.warn(`Color input with id "${inputId}" not found.`);
+                    return;
+                }
+    
+                // Load saved color if available
+                if (this.settings[settingKey]) {
+                    input.value = this.settings[settingKey];
+                }
+    
+                // Save color changes when input updates
+                input.addEventListener("input", (event) => {
+                    this.settings[settingKey] = event.target.value;
+                    localStorage.setItem("ogarx:settings", JSON.stringify(this.settings));
+                });
             }
-
-            // Save color changes when input updates
-            input.addEventListener("input", (event) => {
-                this.settings[settingKey] = event.target.value;
-                localStorage.setItem("ogarx:settings", JSON.stringify(this.settings));
-            });
-        }
-        bindToggleSwitch(t, e) {
-            const i = document.getElementById(e);
-            i ? (i.checked = this.settings[t],
-            i.addEventListener("change", (e => {
-                this.settings[t] = e.target.checked,
-                localStorage.setItem("ogarx:settings", JSON.stringify(this.settings))
+            bindToggleSwitch(t, e) {
+                const i = document.getElementById(e);
+                i ? (i.checked = this.settings[t],
+                i.addEventListener("change", (e => {
+                    this.settings[t] = e.target.checked,
+                    localStorage.setItem("ogarx:settings", JSON.stringify(this.settings))
+                }
+                ))) : console.warn(`Element with id "${e}" not found.`)
             }
-            ))) : console.warn(`Element with id "${e}" not found.`)
         }
+        ;
+        Array.prototype.remove = function(t) {
+            const e = this.indexOf(t);
+            return -1 !== e && this.splice(e, 1),
+            -1 !== e
+        }
+        ,
+        document.addEventListener("DOMContentLoaded", ( () => {
+            console.log("Document is ready, initializing OgarX Engine..."),
+            g.start(),
+            o.start(),
+            window.app = g,
+            window.skins = l,
+            window.renderer = o,
+            window.multibox = a,
+            window.textCache = r
+        }
+        ))
     }
-    ;
-    Array.prototype.remove = function(t) {
-        const e = this.indexOf(t);
-        return -1 !== e && this.splice(e, 1),
-        -1 !== e
-    }
-    ,
-    document.addEventListener("DOMContentLoaded", ( () => {
-        console.log("Document is ready, initializing OgarX Engine..."),
-        g.start(),
-        o.start(),
-        window.app = g,
-        window.skins = l,
-        window.renderer = o,
-        window.multibox = a,
-        window.textCache = r
-    }
-    ))
-}
-)();
+    )();
