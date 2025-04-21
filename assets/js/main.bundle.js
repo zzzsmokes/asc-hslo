@@ -636,7 +636,7 @@
             s.fillStyle = "#FFFFFF",
             s.font = `500 ${30 * c}px Ubuntu`;
             s.textAlign = "right"
-            s.fillText("Horse Client", widthAlign, 32 * c)
+            s.fillText("Viscozy - Ascending", widthAlign, 32 * c)
             s.font = `500 ${20 * c}px Ubuntu`,
             s.textAlign = "right",
             s.textBaseline = "top",
