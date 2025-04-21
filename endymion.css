@@ -875,223 +875,216 @@
 }
 
 .player-data-box {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  padding: 15px;
-  background-color: #151515;
-  transform: translate(-50%, 80px);
-  border-radius: 2px;
-  user-select: none
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    padding: 15px;
+    background-color: #151515;
+    transform: translate(-50%, 80px);
+    border-radius: 2px;
+    user-select: none
 }
 
 .player-data-box #toggle-streammode {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  top: -16px;
-  right: 0px;
-  width: 40px;
-  height: 24px;
-  background-color: #161616;
-  color: #555;
-  cursor: pointer
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: -16px;
+    right: 0px;
+    width: 40px;
+    height: 24px;
+    background-color: #161616;
+    color: #555;
+    cursor: pointer
 }
 
 .player-data-box #toggle-streammode i {
-  font-size: 20px
+    font-size: 20px
 }
 
 .player-data-box .stream-mode {
-  color: transparent !important
+    color: transparent !important
 }
 
 .player-data-box .stream-mode::selection {
-  color: transparent !important;
-  background-color: #ffffff
+    color: transparent !important;
+    background-color: #ffffff
 }
 
 .player-data-box .input-row {
-  display: flex;
-  margin-bottom: 5px
+    display: flex;
+    margin-bottom: 5px
 }
 
 .player-data-box .input-row .input-field {
-  border: none;
-  outline: none;
-  font-family: 'Noto Sans', sans-serif;
-  font-weight: 500;
-  background-color: #222222;
-  color: #ffffff;
-  height: 32px;
-  padding: 9px 7px;
-  box-sizing: border-box;
-  box-shadow: 0px 0px 1px #000000
+    border: none;
+    outline: none;
+    font-family: 'Noto Sans', sans-serif;
+    font-weight: 500;
+    background-color: #222222;
+    color: #ffffff;
+    height: 32px;
+    padding: 9px 7px;
+    box-sizing: border-box;
+    box-shadow: 0px 0px 1px #000000
 }
 
 .player-data-box #tag {
-  width: 75px;
-  transition: all 0.5s
+    width: 75px;
+    transition: all 0.5s
 }
 
-.player-data-box #nickname {
-  width: 205px;
-  margin-left: 5px;
-  transition: all 0.5s
+.player-data-box #nick1 {
+    width: 110px;
+    margin-left: 5px;
+    transition: all 0.5s
+}
+
+.player-data-box #nick2 {
+    width: 110px;
+    margin-left: 5px;
+    transition: all 0.5s
 }
 
 .player-data-box #skin1 {
-  width: 285px;
-  transition: all 0.5s
+    width: 140px;
+    transition: all 0.5s
 }
 
 .player-data-box #skin2 {
-  width: 0px;
-  margin-left: 0px;
-  padding: 0px;
-  transition: all 0.5s
-}
-
-.player-data-box[multibox=on] #tag {
-  width: 55px
-}
-
-.player-data-box[multibox=on] #skin1 {
-  width: 140px
-}
-
-.player-data-box[multibox=on] #skin2 {
-  width: 140px;
-  margin-left: 5px
+    width: 140px;
+    margin-left: 5px;
+    transition: all 0.5s
 }
 
 .player-data-box .room-box {
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center
 }
 
 .player-data-box .room-box .btn {
-  margin: 2px;
-  width: 60px;
-  height: 24px;
-  outline: none;
-  border: none;
-  border-radius: 12px;
-  background-color: #333333;
-  color: #ffffff;
-  cursor: pointer
+    margin: 2px;
+    width: 60px;
+    height: 24px;
+    outline: none;
+    border: none;
+    border-radius: 12px;
+    background-color: #333333;
+    color: #ffffff;
+    cursor: pointer
 }
 
 .player-data-box .room-box #create-room {
-  background-color: #6442ca
+    background-color: #6442ca
 }
 
 .player-data-box .room-box #room-id {
-  margin: 2px;
-  width: 100px;
-  height: 24px;
-  outline: none;
-  border: none;
-  border-radius: 12px;
-  box-sizing: border-box;
-  background-color: #333333;
-  color: #ffffff;
-  text-align: center;
-  padding: 0px 8px;
-  transition: all 0.5s
+    margin: 2px;
+    width: 100px;
+    height: 24px;
+    outline: none;
+    border: none;
+    border-radius: 12px;
+    box-sizing: border-box;
+    background-color: #333333;
+    color: #ffffff;
+    text-align: center;
+    padding: 0px 8px;
+    transition: all 0.5s
 }
 
 .player-data-box #join-room {
-  background-color: #EC3098
+    background-color: #EC3098
 }
 
 .player-data-box .room-type-box {
-  display: flex;
-  margin-top: 4px
+    display: flex;
+    margin-top: 4px
 }
 
 .player-data-box .room-type-box .dropdown {
-  width: 100px;
-  display: flex;
-  flex-direction: row;
-  font-family: 'Noto Sans', sans-serif;
-  background: #151515;
-  color: #ffffff;
-  padding: 4px;
-  height: 32px;
-  box-sizing: border-box;
-  padding-left: 10px;
-  position: relative;
-  cursor: pointer;
-  user-select: none
+    width: 100px;
+    display: flex;
+    flex-direction: row;
+    font-family: 'Noto Sans', sans-serif;
+    background: #151515;
+    color: #ffffff;
+    padding: 4px;
+    height: 32px;
+    box-sizing: border-box;
+    padding-left: 10px;
+    position: relative;
+    cursor: pointer;
+    user-select: none
 }
 
 .player-data-box .room-type-box .dropdown .selected {
-  font-size: 13px;
-  font-weight: 500;
-  line-height: 24px;
-  vertical-align: middle;
-  flex-grow: 1;
-  overflow: hidden
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 24px;
+    vertical-align: middle;
+    flex-grow: 1;
+    overflow: hidden
 }
 
 .player-data-box .room-type-box .dropdown .arrow {
-  vertical-align: middle
+    vertical-align: middle
 }
 
 .player-data-box .room-type-box .dropdown .arrow i {
-  font-size: 20px;
-  line-height: 24px
+    font-size: 20px;
+    line-height: 24px
 }
 
 .player-data-box .room-type-box .dropdown .list {
-  position: absolute;
-  top: 32px;
-  left: 0px;
-  min-width: 100%;
-  max-height: 85px;
-  overflow: hidden;
-  display: none;
-  background-color: #333333
+    position: absolute;
+    top: 32px;
+    left: 0px;
+    min-width: 100%;
+    max-height: 85px;
+    overflow: hidden;
+    display: none;
+    background-color: #333333
 }
 
 .player-data-box .room-type-box .dropdown .list .item {
-  font-size: 12px;
-  font-weight: 500;
-  font-family: 'Noto Sans', sans-serif;
-  padding: 5px 10px
+    font-size: 12px;
+    font-weight: 500;
+    font-family: 'Noto Sans', sans-serif;
+    padding: 5px 10px
 }
 
 .player-data-box .room-type-box .dropdown .list .item:hover {
-  background-color: #444444
+    background-color: #444444
 }
 
 .player-data-box .room-type-box .dropdown:hover .list {
-  display: block
+    display: block
 }
 
 .player-data-box #gamemode {
-  width: 85px
+    width: 85px
 }
 
 .player-data-box #region {
-  width: 195px;
-  margin-left: 5px
+    width: 195px;
+    margin-left: 5px
 }
 
 .player-data-box .decorator {
-  width: 100%;
-  height: 72px;
-  position: absolute;
-  bottom: 0px;
-  left: 0px;
-  background-color: #222222;
-  border-radius: 0px 0px 2px 2px;
-  z-index: -1
+    width: 100%;
+    height: 72px;
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    background-color: #222222;
+    border-radius: 0px 0px 2px 2px;
+    z-index: -1
 }
+
 .player-data-box[multibox=on] #tag {
     width: 55px
 }
