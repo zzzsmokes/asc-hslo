@@ -26,6 +26,7 @@
 
   <!-- Hud Display -->
   <div id="hud-display" class="pointer-events-none visible">
+    <div id="stats"></div>
     <canvas id="leaderboard-canvas" width="200"></canvas>
     <canvas id="active-players-canvas" width="200"></canvas>
     <canvas id="chat-canvas" width="300" height="200"></canvas>
@@ -338,7 +339,7 @@
               <div class="option">
                 <span>Middle click:</span>
                 <select class="mouseActions" id="middleClick">
-                  <option selected ="noAction">No action</option>
+                  <option selected="noAction">No action</option>
                   <option value="macroFeed">Macro Feed</option>
                   <option value="split">Split</option>
                   <option value="doubleSplit">Doublesplit</option>
@@ -399,6 +400,5 @@
 
   <script src="https://unpkg.com/gifler@latest/gifler.min.js"></script>
   <script src="./assets/js/main.bundle.js"></script>
-
 </body>
 </html>
