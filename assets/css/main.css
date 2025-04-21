@@ -101,10 +101,6 @@ body {
     position: absolute;
     z-index: 2;
     background-color: rgba(0, 0, 0, 0.3);
-    /*background-image: url('https://cdn.britannica.com/96/1296-050-4A65097D/gelding-bay-coat.jpg');
-   background-size: cover;
-   background-position: center;
-   background-repeat: no-repeat;*/
 }
 
 #menu-display.visible {
@@ -153,7 +149,66 @@ body {
 
 #active-players-canvas {
     position: absolute;
-    top: 10px;
-    right: 250px; /* Adjust to avoid overlapping with leaderboard */
+    bottom: 10px;
+    left: 10px; /* Moved to bottom-left to avoid overlap with leaderboard */
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(0, 0, 0, 0.13);
     pointer-events: none;
+}
+
+#chat-canvas {
+    position: absolute;
+    bottom: 10px;
+    left: 230px; /* Positioned to the right of active players */
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(0, 0, 0, 0.13);
+    pointer-events: none;
+}
+
+#chat-input-container {
+    position: absolute;
+    bottom: 10px;
+    left: 230px; /* Aligned with chat canvas */
+    width: 300px; /* Matches chat canvas width */
+    display: flex;
+    gap: 5px;
+    pointer-events: all;
+}
+
+#chat-input {
+    flex: 1;
+    padding: 5px;
+    border-radius: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(0, 0, 0, 0.5);
+    color: white;
+    font-family: 'Ubuntu';
+    font-size: 14px;
+}
+
+#chat-input:focus {
+    outline: none;
+    border-color: #00B9E8;
+}
+
+#chat-send {
+    padding: 5px 10px;
+    background-color: #00B9E8;
+    border: none;
+    border-radius: 3px;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#chat-send:hover {
+    background-color: #00A0C6;
+}
+
+#chat-send i {
+    font-size: 18px;
 }
