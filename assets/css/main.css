@@ -101,6 +101,10 @@ body {
     position: absolute;
     z-index: 2;
     background-color: rgba(0, 0, 0, 0.3);
+    /*background-image: url('https://cdn.britannica.com/96/1296-050-4A65097D/gelding-bay-coat.jpg');
+   background-size: cover;
+   background-position: center;
+   background-repeat: no-repeat;*/
 }
 
 #menu-display.visible {
@@ -161,8 +165,8 @@ body {
 
 #active-players-canvas {
     position: absolute;
-    bottom: 10px;
-    left: 10px; /* Moved to bottom-left to avoid overlap with leaderboard */
+    bottom: 10px; /* Changed from top: 10px to bottom: 10px */
+    left: 10px; /* Changed from right: 250px to left: 10px */
     border-radius: 6px;
     background-color: rgba(0, 0, 0, 0.4);
     border: 2px solid rgba(0, 0, 0, 0.13);
