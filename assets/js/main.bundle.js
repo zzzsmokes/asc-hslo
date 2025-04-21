@@ -655,6 +655,111 @@
             }
             ))
         }
+        drawActivePlayers() {
+            const canvas = document.getElementById("active-players-canvas");
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Dynamic height based on number of players
+            const numPlayers = g.activePlayers.length;
+            const itemHeight = 23;
+            const totalHeight = 32 + 15 + numPlayers * itemHeight + 15; // Similar to leaderboard
+            const scale = Math.min(width / 200, totalHeight / (32 + numPlayers * itemHeight + 15));
+            
+            canvas.height = totalHeight * scale;
+            ctx.clearRect(0, 0, width, canvas.height);
+            
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = `500 ${30 * scale}px Ubuntu`;
+            ctx.textAlign = "right";
+            ctx.fillText("Active Players", width - 10, 32 * scale);
+            
+            ctx.font = `500 ${20 * scale}px Ubuntu`;
+            ctx.textBaseline = "top";
+            g.activePlayers.slice(0, 10).forEach((player, index) => {
+                const y = 32 * scale + 15 * scale + index * (23 * scale);
+                const massWidth = ctx.measureText(player.mass).width + 10;
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fillText(`[${player.mass >= 1000 ? (player.mass / 1000).toFixed(1) + "k" : player.mass}]`, width - 10, y);
+                ctx.fillText(player.nickname, width - massWidth - 20 * scale, y);
+            });
+        }
+        loop() {
+            const now = Date.now();
+            const delta = now - this.stats.lastFrameTime;
+        
+            // Calculate FPS
+            this.stats.frameCount++;
+            if (delta >= 1000) {
+                g.stats.fps = Math.round((this.stats.frameCount * 1000) / delta);
+                this.stats.frameCount = 0;
+                this.stats.lastFrameTime = now;
+            }
+        
+            // Update stats
+            this.updateMouseWorld(),
+            this.updateCamera(),
+            this.updateScene(now),
+            this.updateStatsDisplay(),
+            this.drawMinimap(),
+            this.drawLeaderboard(),
+            this.drawActivePlayers(), // Add this
+            this.drawChatMessages(),  // Add this
+            requestAnimationFrame(( () => this.loop()))
+        }
+        drawChatMessages() {
+            const canvas = document.getElementById("chat-canvas");
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+            
+            ctx.fillStyle = "#FFFFFF";
+            ctx.font = "500 20px Ubuntu";
+            ctx.textAlign = "left";
+            ctx.textBaseline = "top";
+            
+            const lineHeight = 25;
+            const maxLines = Math.floor(height / lineHeight);
+            const startIndex = Math.max(0, g.chatMessages.length - maxLines);
+            
+            g.chatMessages.slice(startIndex).forEach((msg, index) => {
+                const client = a.findClientOrigin(msg.clientID);
+                const nickname = client ? client.stores.clientsByID[msg.clientID]?.nickname : "Unknown";
+                const text = `${nickname}: ${msg.message}`;
+                const y = index * lineHeight;
+                
+                // Split long messages into multiple lines
+                const maxWidth = width - 20;
+                let line = "";
+                let lines = [];
+                const words = text.split(" ");
+                
+                for (let word of words) {
+                    const testLine = line + word + " ";
+                    const metrics = ctx.measureText(testLine);
+                    if (metrics.width > maxWidth) {
+                        lines.push(line.trim());
+                        line = word + " ";
+                    } else {
+                        line = testLine;
+                    }
+                }
+                if (line) lines.push(line.trim());
+                
+                lines.forEach((lineText, lineIndex) => {
+                    const lineY = y + lineIndex * lineHeight;
+                    if (lineY + lineHeight <= height) {
+                        ctx.fillStyle = msg.color;
+                        ctx.fillText(lineText, 10, lineY);
+                    }
+                });
+            });
+        }
         drawViewport(t, e, i, s, n, a, o, l) {
             t.strokeStyle = o,
             t.lineWidth = l,
@@ -2206,6 +2311,7 @@
                 this.initMouseControls(),
                 this.initPlayerInputs(),
                 this.initializeSkinInputs()
+                this.sendChatMessage()
             }
             handelResizing() {
                 const t = () => {
@@ -2613,6 +2719,7 @@
             }
         }
         ;
+        
         Array.prototype.remove = function(t) {
             const e = this.indexOf(t);
             return -1 !== e && this.splice(e, 1),
