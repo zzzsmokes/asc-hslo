@@ -947,16 +947,6 @@
     transition: all 0.5s
 }
 
-.player-data-box[multibox=off] #nick1 {
-    width: 205px
-}
-
-.player-data-box[multibox=off] #nick2 {
-    width: 0px;
-    margin-left: 0px;
-    padding: 0px
-}
-
 .player-data-box #skin1 {
     width: 140px;
     transition: all 0.5s
