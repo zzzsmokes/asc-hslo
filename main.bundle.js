@@ -2134,6 +2134,7 @@
             document.body.style.cursor = 'url("./assets/images/cursors/cursor_01.cur"), auto'
         }
         start() {
+            console.log("TEST: This is a test line to confirm main.bundle.js is loaded locally.");
             this.setCursor(),
             this.handelResizing(),
             this.handleESCKey(),
