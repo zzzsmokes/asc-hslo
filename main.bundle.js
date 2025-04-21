@@ -1990,7 +1990,8 @@
             this.playerInfo = {
                 customSkin1: null,
                 customSkin2: null,
-                nickname: null,
+                nickname1: null, // First nickname for parent client
+                nickname2: null, // Second nickname for child client
                 tag: null
             },
             this.stopMoving = !1,
@@ -2073,63 +2074,48 @@
             )),
             i
         }
-  switchClient() {
-    const t = a.getActiveClient(),
-          e = a.getParent(),
-          i = a.getChild(),
-          s = a.totalPlaying();
-    if (!e && !this.connecting) {
-        this.connecting = !0;
-        const t = this.initClient("parent", this.serverUrl);
-        return t.once("clientReady", (t => {
-            this.connecting = !1,
-            t.sendSpawn(),
-            this.exposeWebSocket() // Added line
-        })),
-        void t.on("close", ( () => this.connecting = !1))
-    }
-    if (0 === s && "child" === t?.clientType)
-        return a.setClient(e),
-        e.sendSpawn(),
-        void this.exposeWebSocket(); // Added line
-    if (!this.settings.multiboxAutoSwitchOnDeath && !t?.playing) {
-        if ("child" === t?.clientType && e?.playing)
-            return a.setClient(e),
-            void this.exposeWebSocket(); // Added line
-        if ("parent" === t?.clientType && i?.playing)
-            return a.setClient(i),
-            void this.exposeWebSocket(); // Added line
-    }
-    if ("parent" !== t?.clientType)
-        "child" === t?.clientType && (e.playing ? (a.setClient(e),
-        this.exposeWebSocket()) : (e.sendSpawn(), // Added line
-        e.once("playerAlive", ( () => {
-            a.setClient(e),
-            this.exposeWebSocket() // Added line
-        }))));
-    else if (t.playing)
-        if (i)
-            i.playing ? (a.setClient(i),
-            this.exposeWebSocket()) : (i.sendSpawn(), // Added line
-            i.once("playerAlive", ( () => {
-                a.setClient(i),
-                this.exposeWebSocket() // Added line
-            })));
-        else {
-            const t = this.initClient("child", this.serverUrl);
-            t.once("clientReady", ( () => {
-                t.sendSpawn(),
-                t.once("playerAlive", ( () => {
-                    a.setClient(t),
-                    this.exposeWebSocket() // Added line
-                }))
-            }))
+        switchClient() {
+            const t = a.getActiveClient()
+              , e = a.getParent()
+              , i = a.getChild()
+              , s = a.totalPlaying();
+            if (!e && !this.connecting) {
+                this.connecting = !0;
+                const t = this.initClient("parent", this.serverUrl);
+                return t.once("clientReady", (t => {
+                    this.connecting = !1,
+                    t.sendSpawn()
+                }
+                )),
+                void t.on("close", ( () => this.connecting = !1))
+            }
+            if (0 === s && "child" === t?.clientType)
+                return a.setClient(e),
+                void e.sendSpawn();
+            if (!this.settings.multiboxAutoSwitchOnDeath && !t?.playing) {
+                if ("child" === t?.clientType && e?.playing)
+                    return void a.setClient(e);
+                if ("parent" === t?.clientType && i?.playing)
+                    return void a.setClient(i)
+            }
+            if ("parent" !== t?.clientType)
+                "child" === t?.clientType && (e.playing ? a.setClient(e) : (e.sendSpawn(),
+                e.once("playerAlive", ( () => a.setClient(e)))));
+            else if (t.playing)
+                if (i)
+                    i.playing ? a.setClient(i) : (i.sendSpawn(),
+                    i.once("playerAlive", ( () => a.setClient(i))));
+                else {
+                    const t = this.initClient("child", this.serverUrl);
+                    t.once("clientReady", ( () => {
+                        t.sendSpawn(),
+                        t.once("playerAlive", ( () => a.setClient(t)))
+                    }
+                    ))
+                }
+            else
+                e.sendSpawn()
         }
-    else
-        e.sendSpawn(),
-        this.exposeWebSocket(); // Added line
-}
-
         initializeSkinInputs() {
             this.playerInfo.customSkin1 = localStorage.getItem("customSkin1") || null,
             this.playerInfo.customSkin2 = localStorage.getItem("customSkin2") || null,
