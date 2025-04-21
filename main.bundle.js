@@ -2073,48 +2073,62 @@
             )),
             i
         }
-        switchClient() {
-            const t = a.getActiveClient()
-              , e = a.getParent()
-              , i = a.getChild()
-              , s = a.totalPlaying();
-            if (!e && !this.connecting) {
-                this.connecting = !0;
-                const t = this.initClient("parent", this.serverUrl);
-                return t.once("clientReady", (t => {
-                    this.connecting = !1,
-                    t.sendSpawn()
-                }
-                )),
-                void t.on("close", ( () => this.connecting = !1))
-            }
-            if (0 === s && "child" === t?.clientType)
-                return a.setClient(e),
-                void e.sendSpawn();
-            if (!this.settings.multiboxAutoSwitchOnDeath && !t?.playing) {
-                if ("child" === t?.clientType && e?.playing)
-                    return void a.setClient(e);
-                if ("parent" === t?.clientType && i?.playing)
-                    return void a.setClient(i)
-            }
-            if ("parent" !== t?.clientType)
-                "child" === t?.clientType && (e.playing ? a.setClient(e) : (e.sendSpawn(),
-                e.once("playerAlive", ( () => a.setClient(e)))));
-            else if (t.playing)
-                if (i)
-                    i.playing ? a.setClient(i) : (i.sendSpawn(),
-                    i.once("playerAlive", ( () => a.setClient(i))));
-                else {
-                    const t = this.initClient("child", this.serverUrl);
-                    t.once("clientReady", ( () => {
-                        t.sendSpawn(),
-                        t.once("playerAlive", ( () => a.setClient(t)))
-                    }
-                    ))
-                }
-            else
-                e.sendSpawn()
+  switchClient() {
+    const t = a.getActiveClient(),
+          e = a.getParent(),
+          i = a.getChild(),
+          s = a.totalPlaying();
+    if (!e && !this.connecting) {
+        this.connecting = !0;
+        const t = this.initClient("parent", this.serverUrl);
+        return t.once("clientReady", (t => {
+            this.connecting = !1,
+            t.sendSpawn(),
+            this.exposeWebSocket() // Add this line
+        })),
+        void t.on("close", ( () => this.connecting = !1))
+    }
+    if (0 === s && "child" === t?.clientType)
+        return a.setClient(e),
+        e.sendSpawn(),
+        void this.exposeWebSocket(); // Add this line
+    if (!this.settings.multiboxAutoSwitchOnDeath && !t?.playing) {
+        if ("child" === t?.clientType && e?.playing)
+            return a.setClient(e),
+            void this.exposeWebSocket(); // Add this line
+        if ("parent" === t?.clientType && i?.playing)
+            return a.setClient(i),
+            void this.exposeWebSocket(); // Add this line
+    }
+    if ("parent" !== t?.clientType)
+        "child" === t?.clientType && (e.playing ? (a.setClient(e),
+        this.exposeWebSocket()) : (e.sendSpawn(), // Add this line
+        e.once("playerAlive", ( () => {
+            a.setClient(e),
+            this.exposeWebSocket() // Add this line
+        }))));
+    else if (t.playing)
+        if (i)
+            i.playing ? (a.setClient(i),
+            this.exposeWebSocket()) : (i.sendSpawn(), // Add this line
+            i.once("playerAlive", ( () => {
+                a.setClient(i),
+                this.exposeWebSocket() // Add this line
+            })));
+        else {
+            const t = this.initClient("child", this.serverUrl);
+            t.once("clientReady", ( () => {
+                t.sendSpawn(),
+                t.once("playerAlive", ( () => {
+                    a.setClient(t),
+                    this.exposeWebSocket() // Add this line
+                }))
+            }))
         }
+    else
+        e.sendSpawn(),
+        this.exposeWebSocket(); // Add this line
+}
         initializeSkinInputs() {
             this.playerInfo.customSkin1 = localStorage.getItem("customSkin1") || null,
             this.playerInfo.customSkin2 = localStorage.getItem("customSkin2") || null,
