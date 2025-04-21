@@ -791,6 +791,16 @@
     display: block
 }
 
+/* Style for the new Toggle Dark Mode button */
+.control-bar .buttons .button.right.five {
+    z-index: 0;
+    background: linear-gradient(45deg, #4CAF50, #8BC34A);
+}
+
+.control-bar .buttons .button.right.five:hover {
+    transform: skewX(-10deg) translateX(26px);
+}
+
 .control-bar .skin-preview-circle {
     position: absolute;
     left: 50%;
@@ -1675,7 +1685,6 @@
 #settings-menu .options-list.ps--active-y .option {
     margin-right: 6px
 }
-
 #accounts-menu {
     position: fixed;
     top: 50%;
