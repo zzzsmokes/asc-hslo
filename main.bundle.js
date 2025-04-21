@@ -1990,8 +1990,7 @@
             this.playerInfo = {
                 customSkin1: null,
                 customSkin2: null,
-                nickname1: null, // First nickname for parent client
-                nickname2: null, // Second nickname for child client
+                nickname: null,
                 tag: null
             },
             this.stopMoving = !1,
@@ -2053,24 +2052,25 @@
             i.once("clientReady", (e => {
                 toastr.success("Connected!", `Client (${t})`),
                 a.addClient(e),
-                console.log("Sending player info...");
-                // Send the appropriate nickname based on client type
-                const nickname = t === "parent" ? this.playerInfo.nickname1 : this.playerInfo.nickname2;
+                console.log("Sending player info..."),
                 e.sendPlayerInfo({
-                    nickname: nickname,
+                    nickname: this.playerInfo.nickname,
                     tag: this.playerInfo.tag
-                });
-            })),
+                })
+            }
+            )),
             i.on("close", (e => {
                 toastr.warning("Connection closed.", `Client (${t})`),
                 a.removeClient(e)
-            })),
+            }
+            )),
             i.on("playerDied", ( () => {
                 const e = a.getParent()
                   , i = a.getChild();
                 "parent" === t && i && i.playing && this.settings.multiboxAutoSwitchOnDeath && a.setClient(i),
                 "child" === t && e && e.playing && this.settings.multiboxAutoSwitchOnDeath && a.setClient(e)
-            })),
+            }
+            )),
             i
         }
         switchClient() {
@@ -2143,8 +2143,7 @@
             this.initPlayerControls(),
             this.initMouseControls(),
             this.initPlayerInputs(),
-            this.initializeSkinInputs(),
-            this.initMultiboxToggle()
+            this.initializeSkinInputs()
         }
         handelResizing() {
             const t = () => {
@@ -2208,59 +2207,41 @@
         
         
         initPlayerInputs() {
-            const t = document.getElementById("nick1"), // First nickname input
-                  u = document.getElementById("nick2"), // Second nickname input
-                  e = document.getElementById("tag"),
-                  i = document.getElementById("play"),
-                  s = document.getElementById("spectate"),
-                  n = document.getElementById("menu-display"),
-                  o = document.getElementById("servers"),
-                  l = document.getElementById("restart");
-        
-            // Load saved nicknames from localStorage
-            this.playerInfo.nickname1 = t.value = localStorage.getItem("ogarx:nickname1") || "",
-            this.playerInfo.nickname2 = u.value = localStorage.getItem("ogarx:nickname2") || "",
+            const t = document.getElementById("nickname")
+              , e = document.getElementById("tag")
+              , i = document.getElementById("play")
+              , s = document.getElementById("spectate")
+              , n = document.getElementById("menu-display")
+              , o = document.getElementById("servers")
+              , l = document.getElementById("restart");
+            this.playerInfo.nickname = t.value = localStorage.getItem("ogarx:nickname") || "",
             this.playerInfo.tag = e.value = localStorage.getItem("ogarx:tag") || "";
-        
             const r = localStorage.getItem("ogarx:server") || o.options[0].value;
             o.value = r,
             this.serverUrl = r,
             this.initClient("parent", this.serverUrl),
-        
-            // Update nickname1 on input
             t.addEventListener("input", ( () => {
-                this.playerInfo.nickname1 = t.value;
-                const parentClient = a.getParent();
-                if (parentClient) {
-                    parentClient.sendPlayerInfo({
-                        nickname: this.playerInfo.nickname1
-                    });
+                this.playerInfo.nickname = t.value,
+                a.clients.length && a.clients.forEach((t => {
+                    t.sendPlayerInfo({
+                        nickname: this.playerInfo.nickname
+                    })
                 }
-                localStorage.setItem("ogarx:nickname1", t.value);
-            })),
-        
-            // Update nickname2 on input
-            u.addEventListener("input", ( () => {
-                this.playerInfo.nickname2 = u.value;
-                const childClient = a.getChild();
-                if (childClient) {
-                    childClient.sendPlayerInfo({
-                        nickname: this.playerInfo.nickname2
-                    });
-                }
-                localStorage.setItem("ogarx:nickname2", u.value);
-            })),
-        
+                )),
+                localStorage.setItem("ogarx:nickname", t.value)
+            }
+            )),
             e.addEventListener("input", ( () => {
                 this.playerInfo.tag = e.value,
                 a.clients.forEach((t => {
                     t.sendPlayerInfo({
                         tag: this.playerInfo.tag
                     })
-                })),
+                }
+                )),
                 localStorage.setItem("ogarx:tag", e.value)
-            })),
-        
+            }
+            )),
             o.addEventListener("change", ( () => {
                 const t = o.value;
                 localStorage.setItem("ogarx:server", t),
@@ -2268,68 +2249,32 @@
                 a.clients.length ? a.clients.forEach((t => {
                     t.close(),
                     t.on("close", ( () => this.initClient("parent", this.serverUrl)))
-                })) : this.initClient("parent", this.serverUrl)
-            })),
-        
+                }
+                )) : this.initClient("parent", this.serverUrl)
+            }
+            )),
             l.addEventListener("click", ( () => {
                 a.clients.length ? a.clients.forEach((t => {
                     t.close(),
                     t.on("close", ( () => this.initClient("parent", this.serverUrl)))
-                })) : this.initClient("parent", this.serverUrl)
-            })),
-        
+                }
+                )) : this.initClient("parent", this.serverUrl)
+            }
+            )),
             i.addEventListener("click", ( () => {
                 const t = a.getActiveClient();
                 t && t.sendSpawn(),
                 this.setElementVisibility(n, !1),
                 this.menuVisible = !1
-            })),
-        
+            }
+            )),
             s.addEventListener("click", ( () => {
                 const t = a.getActiveClient();
                 t && t.sendSpectate(),
                 this.setElementVisibility(n, !1),
                 this.menuVisible = !1
-            }))
-        }
-        initMultiboxToggle() {
-            const controlBar = document.querySelector('.control-bar');
-            const playerDataBox = document.querySelector('.player-data-box');
-            const toggleButton = document.getElementById('open-credits');
-        
-            toggleButton.addEventListener('click', () => {
-                const isMultiboxOn = controlBar.getAttribute('multibox') === 'on';
-                const newState = isMultiboxOn ? 'off' : 'on';
-                controlBar.setAttribute('multibox', newState);
-                playerDataBox.setAttribute('multibox', newState);
-        
-                // If enabling multibox, ensure child client is initialized and sync nickname
-                if (newState === 'on') {
-                    if (!a.getChild()) {
-                        const childClient = this.initClient('child', this.serverUrl);
-                        childClient.once("clientReady", () => {
-                            // Sync the current nickname2 value
-                            const nick2Input = document.getElementById("nick2");
-                            const currentNickname2 = nick2Input.value || localStorage.getItem("ogarx:nickname2") || "";
-                            this.playerInfo.nickname2 = currentNickname2;
-                            childClient.sendPlayerInfo({
-                                nickname: currentNickname2,
-                                tag: this.playerInfo.tag
-                            });
-                        });
-                    } else {
-                        // If child client already exists, sync the current nickname2
-                        const childClient = a.getChild();
-                        const nick2Input = document.getElementById("nick2");
-                        const currentNickname2 = nick2Input.value || localStorage.getItem("ogarx:nickname2") || "";
-                        this.playerInfo.nickname2 = currentNickname2;
-                        childClient.sendPlayerInfo({
-                            nickname: currentNickname2,
-                            tag: this.playerInfo.tag
-                        });
-                    }
-                }
-            });
+            }
+            ))
         }
         initPlayerControls() {
             const t = document.querySelectorAll(".hotkey-input");
