@@ -636,7 +636,7 @@
             s.fillStyle = "#FFFFFF",
             s.font = `500 ${30 * c}px Ubuntu`;
             s.textAlign = "right"
-            s.fillText("Ascending", widthAlign, 32 * c)
+            s.fillText("Horse Client", widthAlign, 32 * c)
             s.font = `500 ${20 * c}px Ubuntu`,
             s.textAlign = "right",
             s.textBaseline = "top",
@@ -2134,19 +2134,18 @@
             document.body.style.cursor = 'url("./assets/images/cursors/cursor_01.cur"), auto'
         }
         start() {
-            console.log("TEST: This is a test line to confirm main.bundle.js is loaded locally.");
-            this.setCursor(),
-            this.handelResizing(),
-            this.handleESCKey(),
-            this.initSettingsTabs(),
-            this.initSettings(),
-            this.handleSettingsMenu(),
-            this.initPlayerControls(),
-            this.initMouseControls(),
-            this.initPlayerInputs(),
-            this.initializeSkinInputs(),
-            this.initDarkModeToggle() // Add this line
-        }
+    console.log("TEST: This is a test line to confirm main.bundle.js is loaded locally.");
+    this.setCursor(),
+    this.handelResizing(),
+    this.handleESCKey(),
+    this.initSettingsTabs(),
+    this.initSettings(),
+    this.handleSettingsMenu(),
+    this.initPlayerControls(),
+    this.initMouseControls(),
+    this.initPlayerInputs(),
+    this.initializeSkinInputs()
+}
         handelResizing() {
             const t = () => {
                 const t = document.getElementById("menu-display-center")
@@ -2506,24 +2505,6 @@
             this.bindToggleSwitch("multiboxAutoSwitchOnDeath", "multiboxAutoSwitchOnDeath")
             this.bindColorInput("MBColor1", "MBColor1")
             this.bindColorInput("MBColor2", "MBColor2");
-        }
-        initDarkModeToggle() {
-            const toggleButton = document.getElementById("toggle-dark-mode");
-            if (!toggleButton) {
-                console.warn("Toggle Dark Mode button not found.");
-                return;
-            }
-        
-            // Load the saved theme from localStorage
-            const isLightMode = localStorage.getItem("ogarx:theme") === "light";
-            if (isLightMode) {
-                document.body.classList.add("light-mode");
-            }
-        
-            toggleButton.addEventListener("click", () => {
-                const isLight = document.body.classList.toggle("light-mode");
-                localStorage.setItem("ogarx:theme", isLight ? "light" : "dark");
-            });
         }
         bindSlider(t, e, i) {
             const s = document.getElementById(e),
