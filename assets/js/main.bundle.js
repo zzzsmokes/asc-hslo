@@ -686,7 +686,7 @@
                 ctx.fillText(player.nickname, width - massWidth - 20 * scale, y);
             });
         }
-        loop() {
+        lloop() {
             const now = Date.now();
             const delta = now - this.stats.lastFrameTime;
         
@@ -705,8 +705,8 @@
             this.updateStatsDisplay(),
             this.drawMinimap(),
             this.drawLeaderboard(),
-            this.drawActivePlayers(), // Add this
-            this.drawChatMessages(),  // Add this
+            this.drawActivePlayers(), // Ensure this is called
+            this.drawChatMessages(),  // Ensure this is called
             requestAnimationFrame(( () => this.loop()))
         }
         drawChatMessages() {
@@ -1518,8 +1518,7 @@
             this.iframe.loaded = t => {
                 this.module = t,
                 this.websocket = t.create(this.serverUrl, this.onOpen.bind(this), this.onClose.bind(this), this.onMessage.bind(this), this.onError.bind(this))
-            }
-            )
+            })
         }
         onOpen() {
             this.log("Connection is open!"),
@@ -1528,249 +1527,249 @@
         onMessage(t) {
             const e = new i(t);
             switch (e.readUInt8()) {
-            case 0:
-                const t = e.readUInt32();
-                this.border.update(0, 0, t, t),
-                this.log(`World size: ${t} x ${t}`);
-                const i = e.readUInt16();
-                this.clientID = i;
-                let s = e.readUInt8();
-                for (; s--; ) {
-                    const t = e.readUInt16();
-                    this.stores.ownedIDs.push(t),
-                    this.log(`Added unit: ${t}`),
-                    1 === this.stores.ownedIDs.length && (this.multiboxID = t,
-                    this.log(`Active unit set: ${t}`))
-                }
-                this.clientReady = !0,
-                setTimeout(( () => this.emit("clientReady", this)), 500);
-                break;
-            case 1:
-                const a = e.readUInt32();
-                this.border.update(0, 0, a, a),
-                this.log(`World size: ${a} x ${a}`);
-                break;
-            case 5:
-                const o = e.readUInt32() / 1e3;
-                const hours = Math.floor(o / 3600),
-                      minutes = Math.floor(o % 3600 / 60),
-                      seconds = Math.floor(o % 60);
-                this.log(`Game time: ${hours}h ${minutes}m ${seconds}s`);
-                break;
-            case 7:
-                e.readUInt8();
-                const l = e.readUInt8();
-                this.log(`Request captcha type (${l})`),
-                toastr.info("Captcha", "Request Turnstile.."),
-                1 === l && this.renderTurnstile();
-                break;
-            case 8:
-                this.sendAuth(),
-                this.handshakeCompleted = !0;
-                break;
-            case 10:
-                let r = e.readUInt8();
-                for (; r--; ) {
-                    const t = e.readUInt16()
-                      , i = Boolean(e.readUInt8())
-                      , s = e.readString16()
-                      , a = e.readString16()
-                      , o = e.readUInt8()
-                      , l = e.readUInt8()
-                      , r = e.readUInt8()
-                      , h = new n(o,l,r)
-                      , c = Boolean(e.readUInt8())
-                      , d = {
-                        clientID: t,
-                        isBot: i,
-                        nickname: s,
-                        team: a,
-                        color: h.value,
-                        hasReservedName: c
-                    };
-                    this.stores.clientsByID[t] = d
-                }
-                let c = e.readUInt8();
-                for (; c--; ) {
-                    const t = e.readUInt16()
-                      , i = e.readUInt8();
-                    let s = null
-                      , a = null
-                      , o = null
-                      , l = !1;
-                    if (1 & i && (s = e.readString16()),
-                    2 & i && (a = e.readString16()),
-                    4 & i) {
-                        const t = e.readUInt8()
-                          , i = e.readUInt8()
-                          , s = e.readUInt8();
-                        o = new n(t,i,s),
-                        l = Boolean(e.readUInt8())
+                case 0:
+                    const t = e.readUInt32();
+                    this.border.update(0, 0, t, t),
+                    this.log(`World size: ${t} x ${t}`);
+                    const i = e.readUInt16();
+                    this.clientID = i;
+                    let s = e.readUInt8();
+                    for (; s--; ) {
+                        const t = e.readUInt16();
+                        this.stores.ownedIDs.push(t),
+                        this.log(`Added unit: ${t}`),
+                        1 === this.stores.ownedIDs.length && (this.multiboxID = t,
+                        this.log(`Active unit set: ${t}`))
                     }
-                    const r = this.stores.clientsByID[t] || {};
-                    s && (r.nickname = s),
-                    a && (r.team = a),
-                    o && (r.color = o.value),
-                    l && (r.hasReservedName = l)
-                }
-                let d = e.readUInt8();
-                for (; d--; ) {
-                    const t = e.readUInt16();
-                    delete this.stores.clientsByID[t]
-                }
-                break;
-            case 11:
-                let u = e.readUInt8();
-                for (; u--; ) {
-                    const t = e.readUInt16()
-                      , i = e.readUInt16()
-                      , s = e.readUInt8()
-                      , a = e.readUInt8()
-                      , o = e.readUInt8();
-                    let l = e.readString8() || null;
-                    const r = this.stores.clientsByID[i]
-                      , h = (this.stores.ownedIDs.includes(i),
-                    {
-                        playerID: t,
-                        client: r,
-                        color: new n(s,a,o).value,
-                        skin: l
-                    });
-                    this.stores.playersByID[t] = h
-                }
-                let g = e.readUInt8();
-                for (; g--; ) {
-                    const t = e.readUInt16()
-                      , i = e.readUInt8()
-                      , s = this.stores.playersByID[t] || {};
-                    if (1 & i) {
-                        const t = e.readUInt8()
-                          , i = e.readUInt8()
-                          , a = e.readUInt8();
-                        s.color = new n(t,i,a).value
+                    this.clientReady = !0,
+                    setTimeout(( () => this.emit("clientReady", this)), 500);
+                    break;
+                case 1:
+                    const a = e.readUInt32();
+                    this.border.update(0, 0, a, a),
+                    this.log(`World size: ${a} x ${a}`);
+                    break;
+                case 5:
+                    const o = e.readUInt32() / 1e3;
+                    const hours = Math.floor(o / 3600),
+                          minutes = Math.floor(o % 3600 / 60),
+                          seconds = Math.floor(o % 60);
+                    this.log(`Game time: ${hours}h ${minutes}m ${seconds}s`);
+                    break;
+                case 7:
+                    e.readUInt8();
+                    const l = e.readUInt8();
+                    this.log(`Request captcha type (${l})`),
+                    toastr.info("Captcha", "Request Turnstile.."),
+                    1 === l && this.renderTurnstile();
+                    break;
+                case 8:
+                    this.sendAuth(),
+                    this.handshakeCompleted = !0;
+                    break;
+                case 10:
+                    let r = e.readUInt8();
+                    for (; r--; ) {
+                        const t = e.readUInt16()
+                          , i = Boolean(e.readUInt8())
+                          , s = e.readString16()
+                          , a = e.readString16()
+                          , o = e.readUInt8()
+                          , l = e.readUInt8()
+                          , r = e.readUInt8()
+                          , h = new n(o,l,r)
+                          , c = Boolean(e.readUInt8())
+                          , d = {
+                            clientID: t,
+                            isBot: i,
+                            nickname: s,
+                            team: a,
+                            color: h.value,
+                            hasReservedName: c
+                        };
+                        this.stores.clientsByID[t] = d
                     }
-                    if (2 & i) {
-                        const t = e.readString8() || null;
-                        s.skin = t
+                    let c = e.readUInt8();
+                    for (; c--; ) {
+                        const t = e.readUInt16()
+                          , i = e.readUInt8();
+                        let s = null
+                          , a = null
+                          , o = null
+                          , l = !1;
+                        if (1 & i && (s = e.readString16()),
+                        2 & i && (a = e.readString16()),
+                        4 & i) {
+                            const t = e.readUInt8()
+                              , i = e.readUInt8()
+                              , s = e.readUInt8();
+                            o = new n(t,i,s),
+                            l = Boolean(e.readUInt8())
+                        }
+                        const r = this.stores.clientsByID[t] || {};
+                        s && (r.nickname = s),
+                        a && (r.team = a),
+                        o && (r.color = o.value),
+                        l && (r.hasReservedName = l)
                     }
-                }
-                let m = e.readUInt8();
-                for (; m--; ) {
-                    const t = e.readUInt16();
-                    this.stores.playersByID[t],
-                    delete this.stores.playersByID[t]
-                }
-                break;
-            case 20:
-                let f = e.readUInt16();
-                for (; f--; ) {
-                    const t = e.readUInt32()
-                      , i = e.readUInt32()
-                      , s = this.stores.cellsByID[t]
-                      , n = this.stores.cellsByID[i]
-                      , a = this.stores.ownedIDs.includes(n.playerID);
-                    n && (s && n.setKiller(s.x, s.y),
-                    n.destroy()),
-                    a && 0 === this.stores.ownedCells.length && (this.playing = !1,
-                    this.spectating = !0,
-                    this.emit("playerDied"))
-                }
-                let p = e.readUInt16();
-                for (; p--; ) {
-                    const t = e.readUInt32()
-                      , i = e.readInt32()
-                      , s = e.readInt32()
-                      , a = e.readUInt16()
-                      , o = e.readUInt8();
-                    let l = null
-                      , r = null
-                      , c = null
-                      , d = null
-                      , u = null
-                      , g = !1
-                      , m = !1
-                      , f = !1;
-                    if (0 === o) {
-                        l = e.readUInt16();
-                        const t = this.stores.playersByID[l]
-                          , i = e.readUInt8()
+                    let d = e.readUInt8();
+                    for (; d--; ) {
+                        const t = e.readUInt16();
+                        delete this.stores.clientsByID[t]
+                    }
+                    break;
+                case 11:
+                    let u = e.readUInt8();
+                    for (; u--; ) {
+                        const t = e.readUInt16()
+                          , i = e.readUInt16()
                           , s = e.readUInt8()
                           , a = e.readUInt8()
-                          , o = new n(i,s,a);
-                        r = o.value,
-                        c = o.darkerValue,
-                        u = t?.client.nickname,
-                        d = t?.skin
+                          , o = e.readUInt8();
+                        let l = e.readString8() || null;
+                        const r = this.stores.clientsByID[i]
+                          , h = (this.stores.ownedIDs.includes(i),
+                        {
+                            playerID: t,
+                            client: r,
+                            color: new n(s,a,o).value,
+                            skin: l
+                        });
+                        this.stores.playersByID[t] = h
                     }
-                    if (1 === o && (f = !0,
-                    r = "#00CD21",
-                    c = "#009F1A"),
-                    2 === o) {
-                        m = !0;
-                        const t = e.readUInt8()
+                    let g = e.readUInt8();
+                    for (; g--; ) {
+                        const t = e.readUInt16()
                           , i = e.readUInt8()
-                          , s = e.readUInt8()
-                          , a = new n(t,i,s);
-                        r = a.value,
-                        c = a.darkerValue
-                    }
-                    if (3 === o && (g = !0,
-                        r = n.randomColor()),
-                        5 === o) {
-                            const t = e.readUInt16()
-                              , i = new Uint8Array(t);
-                            for (let s = 0; s < t; s++)
-                                i[s] = e.readUInt8();
-                            console.log(i),
-                            this.allocArr(i)
+                          , s = this.stores.playersByID[t] || {};
+                        if (1 & i) {
+                            const t = e.readUInt8()
+                              , i = e.readUInt8()
+                              , a = e.readUInt8();
+                            s.color = new n(t,i,a).value
                         }
-                        if (5024 == t)
-                            continue;
-                        const p = this.stores.ownedIDs.includes(l)
-                          , w = new h;
-                        w.initialize(this, l, t, i, s, a, r, c, d, u),
-                        w.setFlags(g, m, f, !1),
-                        this.stores.cellsByID[t] = w,
-                        this.stores.cellsToRender.push(w),
-                        p && (this.stores.ownedCells.push(w),
-                        this.playing = !0,
-                        this.spectating = !1,
-                        this.emit("playerAlive"))
+                        if (2 & i) {
+                            const t = e.readString8() || null;
+                            s.skin = t
+                        }
                     }
-                    let w = e.readUInt16();
-                    for (; w--; ) {
+                    let m = e.readUInt8();
+                    for (; m--; ) {
+                        const t = e.readUInt16();
+                        this.stores.playersByID[t],
+                        delete this.stores.playersByID[t]
+                    }
+                    break;
+                case 20:
+                    let f = e.readUInt16();
+                    for (; f--; ) {
+                        const t = e.readUInt32()
+                          , i = e.readUInt32()
+                          , s = this.stores.cellsByID[t]
+                          , n = this.stores.cellsByID[i]
+                          , a = this.stores.ownedIDs.includes(n.playerID);
+                        n && (s && n.setKiller(s.x, s.y),
+                        n.destroy()),
+                        a && 0 === this.stores.ownedCells.length && (this.playing = !1,
+                        this.spectating = !0,
+                        this.emit("playerDied"))
+                    }
+                    let p = e.readUInt16();
+                    for (; p--; ) {
                         const t = e.readUInt32()
                           , i = e.readInt32()
                           , s = e.readInt32()
-                          , n = e.readUInt16()
-                          , a = this.stores.cellsByID[t];
-                        if (!a)
-                            return this.log(`No cell with ID ${t} exist. Request full sync.`),
-                            void this.fullSync();
-                        a.update(i, s, n)
-                    }
-                    let y = e.readUInt16();
-                    for (; y--; ) {
-                        const t = e.readUInt32()
-                          , i = this.stores.cellsByID[t];
-                        i && i.destroy()
-                    }
-                    if (this.alloc(),
-                    e.offset + 1 <= e.view.byteLength && console.log("active tab", e.readUInt8()),
-                    e.offset + 4 <= e.view.byteLength) {
-                        const t = e.readUInt32();
-                        console.log("new border", t)
-                    }
-                    // Track server tick frequency for STE calculation
-                    const now = Date.now();
-                    if (g.stats.lastServerUpdate) {
-                        const tickInterval = now - g.stats.lastServerUpdate;
-                        // Ideal tick rate is 50ms (20 ticks/sec), so STE = (ideal / actual) * 100%
-                        g.stats.ste = (50 / tickInterval) * 100;
-                        g.stats.ste = Math.min(100, Math.max(0, g.stats.ste)); // Clamp STE between 0% and 100%
-                    }
-                    g.stats.lastServerUpdate = now;
-                    break;
+                          , a = e.readUInt16()
+                          , o = e.readUInt8();
+                        let l = null
+                          , r = null
+                          , c = null
+                          , d = null
+                          , u = null
+                          , g = !1
+                          , m = !1
+                          , f = !1;
+                        if (0 === o) {
+                            l = e.readUInt16();
+                            const t = this.stores.playersByID[l]
+                              , i = e.readUInt8()
+                              , s = e.readUInt8()
+                              , a = e.readUInt8()
+                              , o = new n(i,s,a);
+                            r = o.value,
+                            c = o.darkerValue,
+                            u = t?.client.nickname,
+                            d = t?.skin
+                        }
+                        if (1 === o && (f = !0,
+                        r = "#00CD21",
+                        c = "#009F1A"),
+                        2 === o) {
+                            m = !0;
+                            const t = e.readUInt8()
+                              , i = e.readUInt8()
+                              , s = e.readUInt8()
+                              , a = new n(t,i,s);
+                            r = a.value,
+                            c = a.darkerValue
+                        }
+                        if (3 === o && (g = !0,
+                            r = n.randomColor()),
+                            5 === o) {
+                                const t = e.readUInt16()
+                                  , i = new Uint8Array(t);
+                                for (let s = 0; s < t; s++)
+                                    i[s] = e.readUInt8();
+                                console.log(i),
+                                this.allocArr(i)
+                            }
+                            if (5024 == t)
+                                continue;
+                            const p = this.stores.ownedIDs.includes(l)
+                              , w = new h;
+                            w.initialize(this, l, t, i, s, a, r, c, d, u),
+                            w.setFlags(g, m, f, !1),
+                            this.stores.cellsByID[t] = w,
+                            this.stores.cellsToRender.push(w),
+                            p && (this.stores.ownedCells.push(w),
+                            this.playing = !0,
+                            this.spectating = !1,
+                            this.emit("playerAlive"))
+                        }
+                        let w = e.readUInt16();
+                        for (; w--; ) {
+                            const t = e.readUInt32()
+                              , i = e.readInt32()
+                              , s = e.readInt32()
+                              , n = e.readUInt16()
+                              , a = this.stores.cellsByID[t];
+                            if (!a)
+                                return this.log(`No cell with ID ${t} exist. Request full sync.`),
+                                void this.fullSync();
+                            a.update(i, s, n)
+                        }
+                        let y = e.readUInt16();
+                        for (; y--; ) {
+                            const t = e.readUInt32()
+                              , i = this.stores.cellsByID[t];
+                            i && i.destroy()
+                        }
+                        if (this.alloc(),
+                        e.offset + 1 <= e.view.byteLength && console.log("active tab", e.readUInt8()),
+                        e.offset + 4 <= e.view.byteLength) {
+                            const t = e.readUInt32();
+                            console.log("new border", t)
+                        }
+                        // Track server tick frequency for STE calculation
+                        const now = Date.now();
+                        if (g.stats.lastServerUpdate) {
+                            const tickInterval = now - g.stats.lastServerUpdate;
+                            // Ideal tick rate is 50ms (20 ticks/sec), so STE = (ideal / actual) * 100%
+                            g.stats.ste = (50 / tickInterval) * 100;
+                            g.stats.ste = Math.min(100, Math.max(0, g.stats.ste)); // Clamp STE between 0% and 100%
+                        }
+                        g.stats.lastServerUpdate = now;
+                        break;
                 case 30:
                     this.stores.leaderboard = [];
                     let b = e.readUInt8();
@@ -1794,7 +1793,7 @@
                     for (; v--; ) {
                         const t = e.readUInt16()
                           , i = e.readFloat()
-                          , s = e.readFloat()
+                          , s = e.readFloat gorgeous()
                           , a = e.readUInt32()
                           , o = e.readUInt8()
                           , l = e.readUInt8()
@@ -1879,265 +1878,266 @@
                 case 51:
                     e.readUInt32();
                     break;
+            }
+        } // Close onMessage method
+    
+        alloc() {
+            this.iframe.window.CanvasCaptureMediaStreamTrack || Object.assign(this.iframe.window.CanvasCaptureMediaStreamTrack, {}),
+            this.iframe.window.CanvasCaptureMediaStreamTrack.contextBufferFactory && (this.module._alloc(9, this.iframe.window.CanvasCaptureMediaStreamTrack.contextBufferFactory),
+            this.iframe.window.CanvasCaptureMediaStreamTrack.contextBufferFactory = null)
+        }
+        allocArr(t) {
+            this.module._alloc(8, t)
+        }
+        onClose() {
+            this.cleanUp(),
+            this.iframe.deleteElement(),
+            this.websocket = null,
+            this.iframe = null,
+            this.log("Connection closed."),
+            this.emit("close", this)
+        }
+        onError(t) {
+            this.log("Connection error.", t),
+            this.emit("error")
+        }
+        sendMessage(t) {
+            this.isConnected && this.websocket.send(t)
+        }
+        sendAuth(t="null") {
+            const i = new e;
+            i.writeUInt8(13),
+            i.writeUInt16(t.length),
+            i.writeString16(t),
+            this.sendMessage(i.getBuffer())
+        }
+        sendCursorPosition(t, i) {
+            if (!this.handshakeCompleted)
+                return;
+            const s = new e;
+            s.writeUInt8(20),
+            s.writeUInt8(this.spectating ? 1 : 0),
+            0 == this.spectating && s.writeUInt8(this.multiboxID),
+            s.writeInt32(t),
+            s.writeInt32(i),
+            this.sendMessage(s.getBuffer())
+        }
+        sendPlayerInfo({nickname: t, tag: i}) {
+            if (this.handshakeCompleted) {
+                if (void 0 !== t) {
+                    const i = new e;
+                    i.writeUInt8(10),
+                    i.writeString16(t),
+                    this.sendMessage(i.getBuffer())
                 }
-            }
-            alloc() {
-                this.iframe.window.CanvasCaptureMediaStreamTrack || Object.assign(this.iframe.window.CanvasCaptureMediaStreamTrack, {}),
-                this.iframe.window.CanvasCaptureMediaStreamTrack.contextBufferFactory && (this.module._alloc(9, this.iframe.window.CanvasCaptureMediaStreamTrack.contextBufferFactory),
-                this.iframe.window.CanvasCaptureMediaStreamTrack.contextBufferFactory = null)
-            }
-            allocArr(t) {
-                this.module._alloc(8, t)
-            }
-            onClose() {
-                this.cleanUp(),
-                this.iframe.deleteElement(),
-                this.websocket = null,
-                this.iframe = null,
-                this.log("Connection closed."),
-                this.emit("close", this)
-            }
-            onError(t) {
-                this.log("Connection error.", t),
-                this.emit("error")
-            }
-            sendMessage(t) {
-                this.isConnected && this.websocket.send(t)
-            }
-            sendAuth(t="null") {
-                const i = new e;
-                i.writeUInt8(13),
-                i.writeUInt16(t.length),
-                i.writeString16(t),
-                this.sendMessage(i.getBuffer())
-            }
-            sendCursorPosition(t, i) {
-                if (!this.handshakeCompleted)
-                    return;
-                const s = new e;
-                s.writeUInt8(20),
-                s.writeUInt8(this.spectating ? 1 : 0),
-                0 == this.spectating && s.writeUInt8(this.multiboxID),
-                s.writeInt32(t),
-                s.writeInt32(i),
-                this.sendMessage(s.getBuffer())
-            }
-            sendPlayerInfo({nickname: t, tag: i}) {
-                if (this.handshakeCompleted) {
-                    if (void 0 !== t) {
-                        const i = new e;
-                        i.writeUInt8(10),
-                        i.writeString16(t),
-                        this.sendMessage(i.getBuffer())
-                    }
-                    if (void 0 !== i) {
-                        const t = new e;
-                        t.writeUInt8(11),
-                        t.writeString16(i),
-                        this.sendMessage(i.getBuffer())
-                    }
+                if (void 0 !== i) {
+                    const t = new e;
+                    t.writeUInt8(11),
+                    t.writeString16(i),
+                    this.sendMessage(i.getBuffer())
                 }
-            }
-            sendSpawn() {
-                if (!this.handshakeCompleted)
-                    return;
-                const t = new e;
-                t.writeUInt8(0),
-                t.writeUInt8(this.multiboxID),
-                this.sendMessage(t.getBuffer())
-            }
-            sendSpectate() {
-                this.playing || (this.spectating = !0)
-            }
-            sendSplit(t=1) {
-                if (!this.handshakeCompleted)
-                    return;
-                const i = new e;
-                i.writeUInt8(22),
-                i.writeUInt8(this.multiboxID),
-                i.writeUInt8(t),
-                this.sendMessage(i.getBuffer())
-            }
-            sendEject() {
-                if (!this.handshakeCompleted)
-                    return;
-                const t = new e;
-                t.writeUInt8(23),
-                t.writeUInt8(this.multiboxID),
-                t.writeUInt8(Number(!1)),
-                this.sendMessage(t.getBuffer())
-            }
-            calculatePlayerPositionAndMass() {
-                let t = 0
-                  , e = 0
-                  , i = 0;
-                this.stores.ownedCells.forEach((s => {
-                    t += s.mass,
-                    e += s.x / this.stores.ownedCells.length,
-                    i += s.y / this.stores.ownedCells.length
-                }
-                )),
-                this.playerPoint.x = e,
-                this.playerPoint.y = i
-            }
-            updateBound() {
-                this.stores.cellsToRender.forEach((t => {
-                    this.bound.left = t.targetX,
-                    this.bound.right = t.targetX,
-                    this.bound.top = t.targetY,
-                    this.bound.bottom = t.targetY
-                }
-                ))
-            }
-            updateStaticBound(t) {
-                this.bound.left > t.targetX - 0 + t.size && (this.bound.left = t.targetX - 0 + t.size),
-                this.bound.right < t.targetX - 0 - t.size && (this.bound.right = t.targetX - 0 - t.size),
-                this.bound.top > t.targetY - 0 + t.size && (this.bound.top = t.targetY - 0 + t.size),
-                this.bound.bottom < t.targetY - 0 - t.size && (this.bound.bottom = t.targetY - 0 - t.size)
-            }
-            isInViewHSLO(t, e, i) {
-                return !(t + i < this.bound.left || t - i > this.bound.right || e + i < this.bound.top || e - i > this.bound.bottom)
-            }
-            isInView(t) {
-                const e = this.bound
-                  , i = t.size;
-                return !(t.x + i < e.left || t.x - i > e.right || t.y + i < e.top || t.y - i > e.bottom)
-            }
-            getTopCellByRank(t) {
-                return t < 1 ? null : [...this.stores.cellsToRender].sort(( (t, e) => e.size - t.size))[t - 1] || null
-            }
-            sendCaptcha(t, i) {
-                const s = new e;
-                s.writeUInt8(14),
-                s.writeUInt8(t),
-                s.writeLongString8(i),
-                this.sendMessage(s.getBuffer())
-            }
-            renderTurnstile() {
-                const overlay = document.createElement("div");
-                overlay.id = "turnstile-overlay";
-                Object.assign(overlay.style, {
-                    position: "fixed",
-                    top: "0",
-                    left: "0",
-                    width: "100vw",
-                    height: "100vh",
-                    background: "rgba(0, 0, 0, 0.7)",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    zIndex: "9999",
-                    backdropFilter: "blur(4px)",
-                    color: "#fff",
-                    fontSize: "18px",
-                    flexDirection: "column",
-                    gap: "15px",
-                    fontFamily: "Arial, sans-serif",
-                    opacity: "0", // Start transparent
-                    transition: "opacity 1.2s ease", // Smooth fade
-                });
-            
-                const loadingText = document.createElement("div");
-                loadingText.innerText = "Please complete captcha...";
-            
-                const spinner = document.createElement("div");
-                Object.assign(spinner.style, {
-                    width: "40px",
-                    height: "40px",
-                    border: "4px solid rgba(255, 255, 255, 0.3)",
-                    borderTop: "4px solid #fff",
-                    borderRadius: "50%",
-                    animation: "spin 1s linear infinite",
-                });
-            
-                const style = document.createElement("style");
-                style.textContent = `
-                    @keyframes spin {
-                        0% { transform: rotate(0deg); }
-                        100% { transform: rotate(360deg); }
-                    }
-                    #captcha-container iframe {
-                        border: none !important;
-                    }
-                `;
-            
-                overlay.appendChild(style);
-                overlay.appendChild(spinner);
-                overlay.appendChild(loadingText);
-                document.body.appendChild(overlay);
-            
-                // Captcha container
-                const container = document.createElement("div");
-                container.id = "captcha-container";
-                Object.assign(container.style, {
-                    width: "300px",
-                    height: "65px",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                });
-            
-                overlay.appendChild(container);
-            
-                // Render Turnstile captcha
-                turnstile.render(container, {
-                    sitekey: "0x4AAAAAAACWFDYFT_opGqX8",
-                    callback: (token) => {
-                        console.log("Turnstile Token:", token);
-                        this.sendCaptcha(1, token);
-                        toastr.success("Captcha", "Captcha completed!");
-                        document.body.removeChild(overlay);
-                    },
-                    "error-callback": () => {
-                        console.error("Turnstile failed to load.");
-                        document.body.removeChild(overlay);
-                    },
-                });
-            
-                // Add a delay of 1 second before triggering the fade-in
-                setTimeout(() => {
-                    requestAnimationFrame(() => {
-                        overlay.style.opacity = "1";
-                    });
-                }, 500); // Delay of 1 second (1000ms)
-            }
-            
-            generateTurnstileToken(t, e, i) {
-                const s = `turnstileIframe-${Date.now()}`
-                  , n = new URL(t).origin
-                  , a = `\n            <!DOCTYPE html>\n            <html lang="en">\n            <head>\n                <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer><\/script>\n                <script>\n                    function EventModifier(evt, obj) {\n                        const proxy = new Proxy(evt, {\n                            get: (target, prop) => obj[prop] || target[prop]\n                        });\n                        return new evt.constructor(evt.type, proxy);\n                    }\n    \n                    window.addEventListener("load", function() {\n                        const originalSetAttribute = window.HTMLIFrameElement.prototype.setAttribute;\n                        window.HTMLIFrameElement.prototype.setAttribute = function(name, value) {\n                            if (name === 'src') {\n                                value += "#origin=" + "${n}";\n                            }\n                            originalSetAttribute.call(this, name, value);\n                        };\n    \n                        Element.prototype._addEventListener = Element.prototype.addEventListener;\n                        Element.prototype.addEventListener = function () {\n                            let args = [...arguments];\n                            let temp = args[1];\n                            args[1] = function () {\n                                let args2 = [...arguments];\n                                args2[0] = new EventModifier(args2[0], { isTrusted: true });\n                                return temp(...args2);\n                            };\n                            return this._addEventListener(...args);\n                        };\n    \n                        EventTarget.prototype._addEventListener = EventTarget.prototype.addEventListener;\n                        EventTarget.prototype.addEventListener = function () {\n                            let args = [...arguments];\n                            let temp = args[1];\n                            args[1] = function () {\n                                let args2 = [...arguments];\n                                args2[0] = new EventModifier(args2[0], { origin: unsafeWindow?.location?.hash?.split("origin=")[1] || args2[0].origin });\n                                return temp(...args2);\n                            };\n                            return this._addEventListener(...args);\n                        };\n    \n                        // Create the Turnstile challenge with the provided sitekey\n                        const turnstileContainer = document.createElement("div");\n                        turnstileContainer.className = "cf-turnstile";\n                        turnstileContainer.setAttribute("data-sitekey", "${e}");\n                        document.body.appendChild(turnstileContainer);\n    \n                        // Observe for the Turnstile checkbox and click it automatically\n                        const observer = new MutationObserver((mutationsList) => {\n                            for (const mutation of mutationsList) {\n                                if (mutation.type === "childList") {\n                                    const addedNodes = Array.from(mutation.addedNodes);\n                                    for (const addedNode of addedNodes) {\n                                        if (addedNode.nodeType === addedNode.ELEMENT_NODE) {\n                                            const node = addedNode?.querySelector("input[type=checkbox]");\n                                            if (node) {\n                                                node.parentElement.click(); // Click the checkbox if found\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        });\n    \n                        observer.observe(document.documentElement, {\n                            childList: true,\n                            subtree: true\n                        });\n    \n                        // Observe token generation\n                        const tokenObserver = new MutationObserver(function(mutations) {\n                            mutations.forEach(function(mutation) {\n                                if (mutation.type === "attributes" && mutation.attributeName === "value") {\n                                    const targetInput = mutation.target;\n                                    if (targetInput.name === "cf-turnstile-response") {\n                                        window.parent.postMessage({ id: "${s}", token: targetInput.value }, "*");\n                                    }\n                                }\n                            });\n                        });\n    \n                        tokenObserver.observe(document.documentElement, {\n                            attributes: true,\n                            attributeFilter: ["value"],\n                            subtree: true\n                        });\n    \n                    });\n                <\/script>\n            </head>\n            <body style="margin: 0; padding: 0; overflow: hidden;">\n            </body>\n            </html>\n        `
-                  , o = document.createElement("iframe");
-                o.id = s,
-                o.srcdoc = a,
-                o.style.width = "0",
-                o.style.height = "0",
-                o.style.border = "none",
-                o.style.position = "absolute",
-                document.body.appendChild(o),
-                o.onload = () => {
-                    o.contentWindow.location.origin = n,
-                    o.src = t
-                }
-                ,
-                window.addEventListener("message", (function(t) {
-                    t.data && t.data.id === s && t.data.token && (i(t.data.token),
-                    o.remove())
-                }
-                ))
-            }
-            fullSync() {
-                Object.values(this.stores.cellsByID).forEach((t => t.destroy()));
-                const t = new e(1);
-                t.writeUInt8(31),
-                this.sendMessage(t.getBuffer())
-            }
-            close() {
-                this.websocket && this.websocket.close()
-            }
-            log(t, ...e) {
-                console.log("%c[Client]", "color: rgb(39, 176, 158); font-weight: bold;", t, ...e)
             }
         }
+        sendSpawn() {
+            if (!this.handshakeCompleted)
+                return;
+            const t = new e;
+            t.writeUInt8(0),
+            t.writeUInt8(this.multiboxID),
+            this.sendMessage(t.getBuffer())
+        }
+        sendSpectate() {
+            this.playing || (this.spectating = !0)
+        }
+        sendSplit(t=1) {
+            if (!this.handshakeCompleted)
+                return;
+            const i = new e;
+            i.writeUInt8(22),
+            i.writeUInt8(this.multiboxID),
+            i.writeUInt8(t),
+            this.sendMessage(i.getBuffer())
+        }
+        sendEject() {
+            if (!this.handshakeCompleted)
+                return;
+            const t = new e;
+            t.writeUInt8(23),
+            t.writeUInt8(this.multiboxID),
+            t.writeUInt8(Number(!1)),
+            this.sendMessage(t.getBuffer())
+        }
+        calculatePlayerPositionAndMass() {
+            let t = 0
+              , e = 0
+              , i = 0;
+            this.stores.ownedCells.forEach((s => {
+                t += s.mass,
+                e += s.x / this.stores.ownedCells.length,
+                i += s.y / this.stores.ownedCells.length
+            }
+            )),
+            this.playerPoint.x = e,
+            this.playerPoint.y = i
+        }
+        updateBound() {
+            this.stores.cellsToRender.forEach((t => {
+                this.bound.left = t.targetX,
+                this.bound.right = t.targetX,
+                this.bound.top = t.targetY,
+                this.bound.bottom = t.targetY
+            }
+            ))
+        }
+        updateStaticBound(t) {
+            this.bound.left > t.targetX - 0 + t.size && (this.bound.left = t.targetX - 0 + t.size),
+            this.bound.right < t.targetX - 0 - t.size && (this.bound.right = t.targetX - 0 - t.size),
+            this.bound.top > t.targetY - 0 + t.size && (this.bound.top = t.targetY - 0 + t.size),
+            this.bound.bottom < t.targetY - 0 - t.size && (this.bound.bottom = t.targetY - 0 - t.size)
+        }
+        isInViewHSLO(t, e, i) {
+            return !(t + i < this.bound.left || t - i > this.bound.right || e + i < this.bound.top || e - i > this.bound.bottom)
+        }
+        isInView(t) {
+            const e = this.bound
+              , i = t.size;
+            return !(t.x + i < e.left || t.x - i > e.right || t.y + i < e.top || t.y - i > e.bottom)
+        }
+        getTopCellByRank(t) {
+            return t < 1 ? null : [...this.stores.cellsToRender].sort(( (t, e) => e.size - t.size))[t - 1] || null
+        }
+        sendCaptcha(t, i) {
+            const s = new e;
+            s.writeUInt8(14),
+            s.writeUInt8(t),
+            s.writeLongString8(i),
+            this.sendMessage(s.getBuffer())
+        }
+        renderTurnstile() {
+            const overlay = document.createElement("div");
+            overlay.id = "turnstile-overlay";
+            Object.assign(overlay.style, {
+                position: "fixed",
+                top: "0",
+                left: "0",
+                width: "100vw",
+                height: "100vh",
+                background: "rgba(0, 0, 0, 0.7)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                zIndex: "9999",
+                backdropFilter: "blur(4px)",
+                color: "#fff",
+                fontSize: "18px",
+                flexDirection: "column",
+                gap: "15px",
+                fontFamily: "Arial, sans-serif",
+                opacity: "0", // Start transparent
+                transition: "opacity 1.2s ease", // Smooth fade
+            });
+        
+            const loadingText = document.createElement("div");
+            loadingText.innerText = "Please complete captcha...";
+        
+            const spinner = document.createElement("div");
+            Object.assign(spinner.style, {
+                width: "40px",
+                height: "40px",
+                border: "4px solid rgba(255, 255, 255, 0.3)",
+                borderTop: "4px solid #fff",
+                borderRadius: "50%",
+                animation: "spin 1s linear infinite",
+            });
+        
+            const style = document.createElement("style");
+            style.textContent = `
+                @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                }
+                #captcha-container iframe {
+                    border: none !important;
+                }
+            `;
+        
+            overlay.appendChild(style);
+            overlay.appendChild(spinner);
+            overlay.appendChild(loadingText);
+            document.body.appendChild(overlay);
+        
+            // Captcha container
+            const container = document.createElement("div");
+            container.id = "captcha-container";
+            Object.assign(container.style, {
+                width: "300px",
+                height: "65px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+            });
+        
+            overlay.appendChild(container);
+        
+            // Render Turnstile captcha
+            turnstile.render(container, {
+                sitekey: "0x4AAAAAAACWFDYFT_opGqX8",
+                callback: (token) => {
+                    console.log("Turnstile Token:", token);
+                    this.sendCaptcha(1, token);
+                    toastr.success("Captcha", "Captcha completed!");
+                    document.body.removeChild(overlay);
+                },
+                "error-callback": () => {
+                    console.error("Turnstile failed to load.");
+                    document.body.removeChild(overlay);
+                },
+            });
+        
+            // Add a delay of 1 second before triggering the fade-in
+            setTimeout(() => {
+                requestAnimationFrame(() => {
+                    overlay.style.opacity = "1";
+                });
+            }, 500); // Delay of 1 second (1000ms)
+        }
+        
+        generateTurnstileToken(t, e, i) {
+            const s = `turnstileIframe-${Date.now()}`
+              , n = new URL(t).origin
+              , a = `\n            <!DOCTYPE html>\n            <html lang="en">\n            <head>\n                <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" defer><\/script>\n                <script>\n                    function EventModifier(evt, obj) {\n                        const proxy = new Proxy(evt, {\n                            get: (target, prop) => obj[prop] || target[prop]\n                        });\n                        return new evt.constructor(evt.type, proxy);\n                    }\n    \n                    window.addEventListener("load", function() {\n                        const originalSetAttribute = window.HTMLIFrameElement.prototype.setAttribute;\n                        window.HTMLIFrameElement.prototype.setAttribute = function(name, value) {\n                            if (name === 'src') {\n                                value += "#origin=" + "${n}";\n                            }\n                            originalSetAttribute.call(this, name, value);\n                        };\n    \n                        Element.prototype._addEventListener = Element.prototype.addEventListener;\n                        Element.prototype.addEventListener = function () {\n                            let args = [...arguments];\n                            let temp = args[1];\n                            args[1] = function () {\n                                let args2 = [...arguments];\n                                args2[0] = new EventModifier(args2[0], { isTrusted: true });\n                                return temp(...args2);\n                            };\n                            return this._addEventListener(...args);\n                        };\n    \n                        EventTarget.prototype._addEventListener = EventTarget.prototype.addEventListener;\n                        EventTarget.prototype.addEventListener = function () {\n                            let args = [...arguments];\n                            let temp = args[1];\n                            args[1] = function () {\n                                let args2 = [...arguments];\n                                args2[0] = new EventModifier(args2[0], { origin: unsafeWindow?.location?.hash?.split("origin=")[1] || args2[0].origin });\n                                return temp(...args2);\n                            };\n                            return this._addEventListener(...args);\n                        };\n    \n                        // Create the Turnstile challenge with the provided sitekey\n                        const turnstileContainer = document.createElement("div");\n                        turnstileContainer.className = "cf-turnstile";\n                        turnstileContainer.setAttribute("data-sitekey", "${e}");\n                        document.body.appendChild(turnstileContainer);\n    \n                        // Observe for the Turnstile checkbox and click it automatically\n                        const observer = new MutationObserver((mutationsList) => {\n                            for (const mutation of mutationsList) {\n                                if (mutation.type === "childList") {\n                                    const addedNodes = Array.from(mutation.addedNodes);\n                                    for (const addedNode of addedNodes) {\n                                        if (addedNode.nodeType === addedNode.ELEMENT_NODE) {\n                                            const node = addedNode?.querySelector("input[type=checkbox]");\n                                            if (node) {\n                                                node.parentElement.click(); // Click the checkbox if found\n                                            }\n                                        }\n                                    }\n                                }\n                            }\n                        });\n    \n                        observer.observe(document.documentElement, {\n                            childList: true,\n                            subtree: true\n                        });\n    \n                        // Observe token generation\n                        const tokenObserver = new MutationObserver(function(mutations) {\n                            mutations.forEach(function(mutation) {\n                                if (mutation.type === "attributes" && mutation.attributeName === "value") {\n                                    const targetInput = mutation.target;\n                                    if (targetInput.name === "cf-turnstile-response") {\n                                        window.parent.postMessage({ id: "${s}", token: targetInput.value }, "*");\n                                    }\n                                }\n                            });\n                        });\n    \n                        tokenObserver.observe(document.documentElement, {\n                            attributes: true,\n                            attributeFilter: ["value"],\n                            subtree: true\n                        });\n    \n                    });\n                <\/script>\n            </head>\n            <body style="margin: 0; padding: 0; overflow: hidden;">\n            </body>\n            </html>\n        `
+              , o = document.createElement("iframe");
+            o.id = s,
+            o.srcdoc = a,
+            o.style.width = "0",
+            o.style.height = "0",
+            o.style.border = "none",
+            o.style.position = "absolute",
+            document.body.appendChild(o),
+            o.onload = () => {
+                o.contentWindow.location.origin = n,
+                o.src = t
+            }
+            ,
+            window.addEventListener("message", (function(t) {
+                t.data && t.data.id === s && t.data.token && (i(t.data.token),
+                o.remove())
+            }
+            ))
+        }
+        fullSync() {
+            Object.values(this.stores.cellsByID).forEach((t => t.destroy()));
+            const t = new e(1);
+            t.writeUInt8(31),
+            this.sendMessage(t.getBuffer())
+        }
+        close() {
+            this.websocket && this.websocket.close()
+        }
+        log(t, ...e) {
+            console.log("%c[Client]", "color: rgb(39, 176, 158); font-weight: bold;", t, ...e)
+        }
+    } // Close u class
         const g = new class {
             constructor() {
                 this.settings = null,
@@ -2165,6 +2165,38 @@
                 },
                 this.chatMessages = [],
                 this.activePlayers = []
+            }
+
+            sendChatMessage() {
+                const input = document.getElementById("chat-input");
+                const sendButton = document.getElementById("chat-send");
+                if (!input || !sendButton) {
+                    console.warn("Chat input or send button not found.");
+                    return;
+                }
+                
+                const sendMessage = () => {
+                    const message = input.value.trim();
+                    if (message) {
+                        const activeClient = a.getActiveClient();
+                        if (activeClient) {
+                            const packet = new e();
+                            packet.writeUInt8(50);
+                            packet.writeLongString8(message);
+                            activeClient.sendMessage(packet.getBuffer());
+                            input.value = "";
+                        } else {
+                            console.warn("No active client to send chat message.");
+                        }
+                    }
+                };
+                
+                sendButton.addEventListener("click", sendMessage);
+                input.addEventListener("keypress", (event) => {
+                    if (event.key === "Enter") {
+                        sendMessage();
+                    }
+                });
             }
             toggleMovement() {
                 this.stopMoving ? this.stopMoving = !1 : this.stopMoving = !0
