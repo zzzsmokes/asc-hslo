@@ -2060,6 +2060,16 @@
                     nickname: nickname,
                     tag: this.playerInfo.tag
                 });
+                // If this is the child client, also check localStorage for any stored nickname
+                if (t === "child") {
+                    const storedNickname = localStorage.getItem("ogarx:nickname2") || this.playerInfo.nickname2;
+                    if (storedNickname) {
+                        e.sendPlayerInfo({
+                            nickname: storedNickname,
+                            tag: this.playerInfo.tag
+                        });
+                    }
+                }
             })),
             i.on("close", (e => {
                 toastr.warning("Connection closed.", `Client (${t})`),
@@ -2143,7 +2153,8 @@
             this.initPlayerControls(),
             this.initMouseControls(),
             this.initPlayerInputs(),
-            this.initializeSkinInputs()
+            this.initializeSkinInputs(),
+            this.initMultiboxToggle()
         }
         handelResizing() {
             const t = () => {
@@ -2246,8 +2257,10 @@
                     childClient.sendPlayerInfo({
                         nickname: this.playerInfo.nickname2
                     });
+                } else {
+                    // If child client isn't initialized yet, store the nickname and apply it later
+                    localStorage.setItem("ogarx:nickname2", u.value);
                 }
-                localStorage.setItem("ogarx:nickname2", u.value);
             })),
         
             e.addEventListener("input", ( () => {
@@ -2290,6 +2303,23 @@
                 this.setElementVisibility(n, !1),
                 this.menuVisible = !1
             }))
+        }
+        initMultiboxToggle() {
+            const controlBar = document.querySelector('.control-bar');
+            const playerDataBox = document.querySelector('.player-data-box');
+            const toggleButton = document.getElementById('open-credits');
+        
+            toggleButton.addEventListener('click', () => {
+                const isMultiboxOn = controlBar.getAttribute('multibox') === 'on';
+                const newState = isMultiboxOn ? 'off' : 'on';
+                controlBar.setAttribute('multibox', newState);
+                playerDataBox.setAttribute('multibox', newState);
+        
+                // If enabling multibox, ensure child client is initialized
+                if (newState === 'on' && !a.getChild()) {
+                    this.initClient('child', this.serverUrl);
+                }
+            });
         }
         initPlayerControls() {
             const t = document.querySelectorAll(".hotkey-input");
