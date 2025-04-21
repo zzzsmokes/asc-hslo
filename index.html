@@ -106,6 +106,8 @@
             <input class="input-field" id="tag" placeholder="Tag" maxlength="10">
             <input class="input-field" id="nick1" placeholder="Nickname 1" maxlength="14">
             <input class="input-field" id="nick2" placeholder="Nickname 2" maxlength="14">
+            <!-- Hidden field for compatibility with main.bundle.js -->
+            <input type="hidden" id="nickname">
           </div>
           <div class="input-row">
             <input class="input-field" id="skin1" placeholder="Skin URL 1">
@@ -386,6 +388,70 @@
         'showMethod': 'fadeIn',
         'hideMethod': 'fadeOut',
       }
+
+      // Inline script to handle dual nicknames
+      document.addEventListener("DOMContentLoaded", () => {
+        const nick1 = document.getElementById("nick1");
+        const nick2 = document.getElementById("nick2");
+        const hiddenNickname = document.getElementById("nickname");
+        const controlBar = document.querySelector(".control-bar");
+        const toggleButton = document.getElementById("open-credits");
+        const switchPlayerKey = document.getElementById("switchPlayerkey");
+
+        // Load saved nicknames from localStorage
+        nick1.value = localStorage.getItem("ogarx:nickname1") || "";
+        nick2.value = localStorage.getItem("ogarx:nickname2") || "";
+        hiddenNickname.value = nick1.value; // Default to nick1 for parent client
+
+        // Track the active client (parent or child)
+        let activeClient = "parent";
+
+        // Update hidden nickname field when nick1 changes
+        nick1.addEventListener("input", () => {
+          localStorage.setItem("ogarx:nickname1", nick1.value);
+          if (activeClient === "parent") {
+            hiddenNickname.value = nick1.value;
+          }
+        });
+
+        // Update hidden nickname field when nick2 changes
+        nick2.addEventListener("input", () => {
+          localStorage.setItem("ogarx:nickname2", nick2.value);
+          if (activeClient === "child") {
+            hiddenNickname.value = nick2.value;
+          }
+        });
+
+        // Toggle multibox mode and initialize child client if needed
+        toggleButton.addEventListener("click", () => {
+          const isMultiboxOn = controlBar.getAttribute("multibox") === "on";
+          const newState = isMultiboxOn ? "off" : "on";
+          controlBar.setAttribute("multibox", newState);
+          document.querySelector(".player-data-box").setAttribute("multibox", newState);
+
+          if (newState === "on" && !window.multibox.getChild()) {
+            window.app.initClient("child", window.app.serverUrl);
+          }
+        });
+
+        // Switch between parent and child clients when the switch player key is pressed
+        document.addEventListener("keydown", (e) => {
+          if (e.code === switchPlayerKey.value) {
+            e.preventDefault();
+            const parentClient = window.multibox.getParent();
+            const childClient = window.multibox.getChild();
+            if (activeClient === "parent" && childClient) {
+              activeClient = "child";
+              hiddenNickname.value = nick2.value;
+              window.app.switchClient();
+            } else if (activeClient === "child" && parentClient) {
+              activeClient = "parent";
+              hiddenNickname.value = nick1.value;
+              window.app.switchClient();
+            }
+          }
+        });
+      });
     </script>
 
     <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
