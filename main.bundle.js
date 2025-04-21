@@ -2060,16 +2060,6 @@
                     nickname: nickname,
                     tag: this.playerInfo.tag
                 });
-                // If this is the child client, also check localStorage for any stored nickname
-                if (t === "child") {
-                    const storedNickname = localStorage.getItem("ogarx:nickname2") || this.playerInfo.nickname2;
-                    if (storedNickname) {
-                        e.sendPlayerInfo({
-                            nickname: storedNickname,
-                            tag: this.playerInfo.tag
-                        });
-                    }
-                }
             })),
             i.on("close", (e => {
                 toastr.warning("Connection closed.", `Client (${t})`),
@@ -2257,10 +2247,8 @@
                     childClient.sendPlayerInfo({
                         nickname: this.playerInfo.nickname2
                     });
-                } else {
-                    // If child client isn't initialized yet, store the nickname and apply it later
-                    localStorage.setItem("ogarx:nickname2", u.value);
                 }
+                localStorage.setItem("ogarx:nickname2", u.value);
             })),
         
             e.addEventListener("input", ( () => {
@@ -2315,9 +2303,31 @@
                 controlBar.setAttribute('multibox', newState);
                 playerDataBox.setAttribute('multibox', newState);
         
-                // If enabling multibox, ensure child client is initialized
-                if (newState === 'on' && !a.getChild()) {
-                    this.initClient('child', this.serverUrl);
+                // If enabling multibox, ensure child client is initialized and sync nickname
+                if (newState === 'on') {
+                    if (!a.getChild()) {
+                        const childClient = this.initClient('child', this.serverUrl);
+                        childClient.once("clientReady", () => {
+                            // Sync the current nickname2 value
+                            const nick2Input = document.getElementById("nick2");
+                            const currentNickname2 = nick2Input.value || localStorage.getItem("ogarx:nickname2") || "";
+                            this.playerInfo.nickname2 = currentNickname2;
+                            childClient.sendPlayerInfo({
+                                nickname: currentNickname2,
+                                tag: this.playerInfo.tag
+                            });
+                        });
+                    } else {
+                        // If child client already exists, sync the current nickname2
+                        const childClient = a.getChild();
+                        const nick2Input = document.getElementById("nick2");
+                        const currentNickname2 = nick2Input.value || localStorage.getItem("ogarx:nickname2") || "";
+                        this.playerInfo.nickname2 = currentNickname2;
+                        childClient.sendPlayerInfo({
+                            nickname: currentNickname2,
+                            tag: this.playerInfo.tag
+                        });
+                    }
                 }
             });
         }
