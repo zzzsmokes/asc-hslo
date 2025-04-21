@@ -875,90 +875,76 @@
 }
 
 .player-data-box {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  padding: 15px;
-  background-color: #151515;
-  transform: translate(-50%, 80px);
-  border-radius: 2px;
-  user-select: none
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    padding: 15px;
+    background-color: #151515;
+    transform: translate(-50%, 80px);
+    border-radius: 2px;
+    user-select: none
 }
 
 .player-data-box #toggle-streammode {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: absolute;
-  top: -16px;
-  right: 0px;
-  width: 40px;
-  height: 24px;
-  background-color: #161616;
-  color: #555;
-  cursor: pointer
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: absolute;
+    top: -16px;
+    right: 0px;
+    width: 40px;
+    height: 24px;
+    background-color: #161616;
+    color: #555;
+    cursor: pointer
 }
 
 .player-data-box #toggle-streammode i {
-  font-size: 20px
+    font-size: 20px
 }
 
 .player-data-box .stream-mode {
-  color: transparent !important
+    color: transparent !important
 }
 
 .player-data-box .stream-mode::selection {
-  color: transparent !important;
-  background-color: #ffffff
+    color: transparent !important;
+    background-color: #ffffff
 }
 
 .player-data-box .input-row {
-  display: flex;
-  margin-bottom: 5px
+    display: flex;
+    margin-bottom: 5px
 }
 
 .player-data-box .input-row .input-field {
-  border: none;
-  outline: none;
-  font-family: 'Noto Sans', sans-serif;
-  font-weight: 500;
-  background-color: #222222;
-  color: #ffffff;
-  height: 32px;
-  padding: 9px 7px;
-  box-sizing: border-box;
-  box-shadow: 0px 0px 1px #000000
+    border: none;
+    outline: none;
+    font-family: 'Noto Sans', sans-serif;
+    font-weight: 500;
+    background-color: #222222;
+    color: #ffffff;
+    height: 32px;
+    padding: 9px 7px;
+    box-sizing: border-box;
+    box-shadow: 0px 0px 1px #000000
 }
 
 .player-data-box #tag {
-  width: 75px;
-  transition: all 0.5s
+    width: 75px;
+    transition: all 0.5s
 }
 
 .player-data-box #nick1 {
-  width: 110px;
-  margin-left: 5px;
-  transition: all 0.5s
+    width: 110px;
+    margin-left: 5px;
+    transition: all 0.5s
 }
 
 .player-data-box #nick2 {
-  width: 110px;
-  margin-left: 5px;
-  transition: all 0.5s
-}
-
-.player-data-box[multibox=off] #nick1 {
-  width: 205px
-}
-
-.player-data-box[multibox=off] #nick2 {
-  width: 0px;
-  margin-left: 0px;
-  padding: 0px
-}
-
-.player-data-box[multibox=on] #tag {
-  width: 55px
+    width: 110px;
+    margin-left: 5px;
+    transition: all 0.5s
 }
 
 .player-data-box #skin1 {
